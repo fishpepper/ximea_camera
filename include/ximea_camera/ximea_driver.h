@@ -63,11 +63,17 @@ public:
   }
 
 protected:
+  std::string cam_name_;
+  std::string image_data_format_;  // One of XI_MONO8, XI_RGB24, XI_RGB32, XI_RAW
+  std::string yaml_url_;
+  HANDLE xiH_;
+  XI_IMG image_;
+
+private:
   void assignDefaultValues();
   void fetchLimits();
 
   // variables for ximea api internals
-  std::string cam_name_;
   int serial_no_;
   int cams_on_bus_;
   int bandwidth_safety_margin_;
@@ -84,10 +90,6 @@ protected:
   int cam_resolution_h;
   int cam_resolution_w;
   bool acquisition_active_;
-  std::string image_data_format_;  // One of XI_MONO8, XI_RGB24, XI_RGB32, XI_RAW
-  std::string yaml_url_;
-  HANDLE xiH_;
-  XI_IMG image_;
   int image_capture_timeout_;  // max amount of time to wait for an image to come in
   unsigned char trigger_mode_;
 };
