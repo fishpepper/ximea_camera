@@ -193,6 +193,7 @@ void ximea_driver::setImageDataFormat(std::string image_format)
 
 void ximea_driver::setROI(int l, int t, int w, int h)
 {
+    return;
     XI_RETURN stat;
 
     if (!hasValidHandle())
