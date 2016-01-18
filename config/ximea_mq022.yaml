@@ -6,4 +6,5 @@ rect_left: 0
 rect_top: 0
 rect_height: 1080
 rect_width: 2040
+allocated_bandwidth: 1.0
 image_data_format: "XI_RGB24"

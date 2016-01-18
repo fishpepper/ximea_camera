@@ -16,6 +16,8 @@ All rights reserved.
 #include <sstream>
 #include <string>
 
+#define XIMEA_DRIVER_DEBUG_LEVEL XI_DL_FATAL    //XI_DL_DETAIL
+
 ximea_driver::ximea_driver(int serial_no, std::string cam_name)
 {
     serial_no_ = serial_no;
@@ -27,6 +29,7 @@ ximea_driver::ximea_driver(int serial_no, std::string cam_name)
 
 void ximea_driver::assignDefaultValues()
 {
+    allocated_bandwidth = 1.0;
     cams_on_bus_ = 4;
     bandwidth_safety_margin_ = 30;
     binning_enabled_ = false;
@@ -87,6 +90,14 @@ void ximea_driver::openDevice()
     char camera_name[256];
     char camera_serial[256];
 
+    //set xiapi debug level:
+    stat = xiSetParamInt(0, XI_PRM_DEBUG_LEVEL, XIMEA_DRIVER_DEBUG_LEVEL);
+    errorHandling(stat,"XI_PRM_DEBUG_LEVEL");
+
+    //disable auto bandwidth measurements:
+    stat = xiSetParamInt(0, XI_PRM_AUTO_BANDWIDTH_CALCULATION, XI_OFF);
+    errorHandling(stat,"XI_PRM_AUTO_BANDWIDTH_CALCULATION");
+
     if (serial_no_ == 0) {
         stat = xiOpenDevice(0, &xiH_);
         errorHandling(stat, "Open Device");
@@ -107,6 +118,35 @@ void ximea_driver::openDevice()
 
     //fetch cam name
     std::cout << "Opened Camera with Serial " << camera_serial << " and name '" << camera_name << "' \n";
+
+    //limit bandwidth:
+    limitBandwidth(allocated_bandwidth);
+
+
+    /*
+    stat = xiSetParamInt(xiH_, XI_PRM_IMAGE_DATA_FORMAT, XI_RGB24);
+    errorHandling(stat, "Start Acquisition");
+
+    //always use auto white balance for color cameras
+    stat = xiSetParamInt( xiH_, XI_PRM_AUTO_WB, 1);
+    errorHandling(stat, "Start Acquisition");
+
+
+
+    std::cout << "starting acq\n";
+    stat = xiStartAcquisition(xiH_);
+    errorHandling(stat, "Start Acquisition");
+
+    sleep(1);
+
+    stat = xiGetImage(xiH_, 1000, &image_);
+    errorHandling(stat, "GRAB");
+
+    std::cout << "grab res " << stat << "\n";
+    std::cout << "image w" << image_.width << "\n";
+
+    exit(0);
+    */
 
     fetchLimits();
     applyParameters();
@@ -394,6 +434,13 @@ int ximea_driver::readParamsFromFile(std::string file_name)
         rect_height_ = doc["rect_height"].as<int>();
     }
     catch (std::runtime_error) {}
+
+    try
+    {
+        allocated_bandwidth = doc["allocated_bandwidth"].as<float>();
+    }
+    catch (std::runtime_error) { std::cerr << "missing parameter allocated_bandwidth\n"; }
+
     setROI(rect_left_, rect_top_, rect_width_, rect_height_);
     try
     {
@@ -446,10 +493,21 @@ void ximea_driver::triggerDevice()
     }
 }
 
-void ximea_driver::limitBandwidth(int mbps)
+//assign a part of available bandwidth to this cam:
+void ximea_driver::limitBandwidth(float factor)
 {
     if (!xiH_) return;
     XI_RETURN stat;
-    stat = xiSetParamInt(xiH_, XI_PRM_LIMIT_BANDWIDTH , mbps);
-    errorHandling(stat, "could not limit bandwidth");
+
+    int bandwidth;
+    stat = xiGetParamInt(xiH_, XI_PRM_AVAILABLE_BANDWIDTH, &bandwidth);
+    errorHandling(stat, "XI_PRM_AVAILABLE_BANDWIDTH");
+    std::cout << "measured total bandwith as " << bandwidth << "mbps\n";
+
+    unsigned int cam_bandwidth = (bandwidth-bandwidth_safety_margin_) * allocated_bandwidth;
+    std::cout << "will asign a total of " << cam_bandwidth << "mbps (" << allocated_bandwidth << ") to this camera\n";
+
+    stat = xiSetParamInt(xiH_, XI_PRM_LIMIT_BANDWIDTH , cam_bandwidth);
+
+    errorHandling(stat, "XI_PRM_LIMIT_BANDWIDTH");
 }
