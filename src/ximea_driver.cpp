@@ -20,6 +20,8 @@ ximea_driver::ximea_driver(int serial_no, std::string cam_name)
 {
     serial_no_ = serial_no;
     cam_name_ = cam_name;
+    cam_resolution_w = 0;
+    cam_resolution_h = 0;
     assignDefaultValues();
 }
 
@@ -34,9 +36,11 @@ void ximea_driver::assignDefaultValues()
     image_data_format_ = "XI_MONO8";
     rect_left_ = 0;
     rect_top_ = 0;
-    rect_width_ = 1280;
-    rect_height_ = 1024;
+    rect_width_ = cam_resolution_w;
+    rect_height_ = cam_resolution_h;
     xiH_ = NULL;
+    //pre init all XI_IMG fields to zero:
+    memset(&image_, 0, sizeof(XI_IMG));
     image_.size = sizeof(XI_IMG);
     image_.bp = NULL;
     image_.bp_size = 0;
@@ -80,18 +84,30 @@ void ximea_driver::applyParameters()
 void ximea_driver::openDevice()
 {
     XI_RETURN stat;
-    if (serial_no_ == 0)
-    {
+    char camera_name[256];
+    char camera_serial[256];
+
+    if (serial_no_ == 0) {
         stat = xiOpenDevice(0, &xiH_);
         errorHandling(stat, "Open Device");
-    }
-    else
-    {
+    } else {
         std::stringstream conv;
         conv << serial_no_;
         stat = xiOpenDeviceBy(XI_OPEN_BY_SN, conv.str().c_str(), &xiH_);
         errorHandling(stat, "Open Device");
     }
+
+    //fetch cam name
+    stat = xiGetParamString(xiH_, XI_PRM_DEVICE_NAME, camera_name, sizeof(camera_name));
+    errorHandling(stat,"xiGetParamString");
+
+    //fetch cam serial (useful if no serial was given)
+    stat = xiGetParamString(xiH_, XI_PRM_DEVICE_SN, camera_serial, sizeof(camera_serial));
+    errorHandling(stat,"xiGetParamString");
+
+    //fetch cam name
+    std::cout << "Opened Camera with Serial " << camera_serial << " and name '" << camera_name << "' \n";
+
     fetchLimits();
     applyParameters();
 }
@@ -130,13 +146,22 @@ void ximea_driver::startAcquisition()
 
 void ximea_driver::acquireImage()
 {
+    XI_RETURN stat;
+
     if (!hasValidHandle())
     {
         return;
     }
-    XI_RETURN stat = xiGetImage(xiH_, image_capture_timeout_, &image_);
-    if (stat != 0)
-    {
+    //try to fetch image:
+    do{
+        //grabbing is stopped ?! (re)start grabbing
+        cerr << "WARNING: ximera acquisition seems to be stopped, will restart now\n";
+
+        xiStartAcquisition(xiH_);
+        stat = xiGetImage(xiH_, image_capture_timeout_, &image_);
+    }while (stat == XI_ACQUISITION_STOPED);
+
+    if (stat != 0){
         std::cerr << "Error on " << cam_name_ << ": xiGetImage resulted in error " <<  stat << std::endl;
     }
 }
@@ -193,7 +218,6 @@ void ximea_driver::setImageDataFormat(std::string image_format)
 
 void ximea_driver::setROI(int l, int t, int w, int h)
 {
-    return;
     XI_RETURN stat;
 
     if (!hasValidHandle())
@@ -233,7 +257,7 @@ void ximea_driver::setROI(int l, int t, int w, int h)
         rect_height_ = cam_resolution_h;
     }
 
-    std::cout << rect_height_ << " " << rect_width_ << " " << rect_left_ << " " << rect_top_ << std::endl;
+    std::cout << "will set roi to: " << rect_width_ << "x" << rect_height_ << " " << rect_left_ << " " << rect_top_ << std::endl;
 
     int tmp;
     stat = xiSetParamInt(xiH_, XI_PRM_WIDTH, rect_width_);
