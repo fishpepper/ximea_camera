@@ -5,9 +5,28 @@ project(ximea_camera)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 
-set(XIMEA_INCLUDE_PATH /usr/include)
-set(XIMEA_LIBRARY_PATH /usr/lib)
-set(XIMEA_LIBRARY m3api)
+#use PkgConfig
+find_package(PkgConfig REQUIRED)
+
+# This driver uses Boost threads
+find_package(Boost REQUIRED COMPONENTS thread)
+
+# This driver uses ximea xiapi, if xiapi was installed
+# using https://github.com/fishpepper/ximea_api_installer
+# we can use the pkg config file for this:
+pkg_search_module(XIMEA xiapi>=4.3.6)
+IF (XIMEA_FOUND)
+  MESSAGE("-- using ximea xiAPI version ${XIMEA_VERSION} from ${XIMEA_PREFIX}")
+  SET(XIMEA_INCLUDE_PATH ${XIMEA_INCLUDE_DIRS})
+  SET(XIMEA_LIBRARY_PATH ${XIMEA_LIBRARY_DIRS})
+  SET(XIMEA_LIBRARY      ${XIMEA_LIBRARIES})
+ELSE (XIMEA_FOUND)
+  message(FATAL_ERROR "INFO: xiapi pkg config not found, will use system paths")
+  set(XIMEA_INCLUDE_PATH /usr/include)
+  set(XIMEA_LIBRARY_PATH /usr/lib)
+  set(XIMEA_LIBRARY m3api)
+ENDIF (XIMEA_FOUND)
+
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -117,6 +136,10 @@ include_directories(
 #   src/${PROJECT_NAME}/ximea2.cpp
 # )
 
+
+## link against lib path
+link_directories(${XIMEA_LIBRARY_PATH})
+
 ## Declare a cpp executable
  add_executable(ximea_camera_node src/ximea_driver.cpp src/ximea_ros_driver.cpp src/ximea_ros_cluster.cpp src/ximea.cpp )
 
@@ -186,3 +209,4 @@ include_directories(
 ###########
 set(ROSLINT_CPP_OPTS  "--filter=-whitespace/line_length,-readability/todo" )
 roslint_cpp()
+
