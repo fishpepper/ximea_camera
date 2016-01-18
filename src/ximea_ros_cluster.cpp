@@ -106,7 +106,7 @@ void ximea_ros_cluster::clusterInit()
             cams_[i].setROI(200, 200, 900, 600);
             cams_[i].setExposure(10000);
         }
-        cams_[i].limitBandwidth((USB3_BANDWIDTH) - USB_BUS_SAFETY_MARGIN);
+        //cams_[i].limitBandwidth((USB3_BANDWIDTH) - USB_BUS_SAFETY_MARGIN);
         cams_[i].startAcquisition();
         // TODO: remove this into constructor
     }
