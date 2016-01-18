@@ -127,7 +127,7 @@ void ximea_driver::acquireImage()
   XI_RETURN stat = xiGetImage(xiH_, image_capture_timeout_, &image_);
   if (stat != 0)
   {
-    std::cout << "Error on" << cam_name_ << " with error " <<  stat << std::endl;
+    std::cout << "Error on " << cam_name_ << ": xiGetImage resulted in error " <<  stat << std::endl;
   }
 }
 
