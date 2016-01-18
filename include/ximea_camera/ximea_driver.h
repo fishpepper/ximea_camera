@@ -64,6 +64,7 @@ public:
 
 protected:
   void assignDefaultValues();
+  void fetchLimits();
 
   // variables for ximea api internals
   std::string cam_name_;
@@ -80,6 +81,8 @@ protected:
   int rect_top_;
   int rect_width_;
   int rect_height_;
+  int cam_resolution_h;
+  int cam_resolution_w;
   bool acquisition_active_;
   std::string image_data_format_;  // One of XI_MONO8, XI_RGB24, XI_RGB32, XI_RAW
   std::string yaml_url_;

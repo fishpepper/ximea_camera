@@ -61,6 +61,15 @@ void ximea_driver::errorHandling(XI_RETURN ret, std::string message)
   }
 }
 
+void ximea_driver::fetchLimits(){
+    XI_RETURN stat;
+    //fetch frame size from cam:
+    stat = xiGetParamInt(xiH_, XI_PRM_WIDTH XI_PRM_INFO_MAX, &cam_resolution_w);
+    errorHandling(stat, "camera resolution max width");
+    stat = xiGetParamInt(xiH_, XI_PRM_HEIGHT XI_PRM_INFO_MAX, &cam_resolution_h);
+    errorHandling(stat, "camera resolution max height");
+}
+
 void ximea_driver::applyParameters()
 {
   setImageDataFormat(image_data_format_);
@@ -83,6 +92,7 @@ void ximea_driver::openDevice()
     stat = xiOpenDeviceBy(XI_OPEN_BY_SN, conv.str().c_str(), &xiH_);
     errorHandling(stat, "Open Device");
   }
+  fetchLimits();
   applyParameters();
 }
 
