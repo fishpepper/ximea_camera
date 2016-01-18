@@ -210,3 +210,7 @@ link_directories(${XIMEA_LIBRARY_PATH})
 set(ROSLINT_CPP_OPTS  "--filter=-whitespace/line_length,-readability/todo" )
 roslint_cpp()
 
+
+#workaround for qtcreator ide integration. do not remove!
+file(GLOB_RECURSE NODE_DUMMY_TARGETS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.h)
+add_custom_target(node_dummy_target SOURCES ${NODE_DUMMY_TARGETS})
