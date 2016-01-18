@@ -48,8 +48,6 @@ ximea_ros_cluster::ximea_ros_cluster(int num_cams) : USB_BUS_SAFETY_MARGIN(0), U
         ros::NodeHandle nh(std::string("/") + cam_names[i]);
         add_camera(ximea_ros_driver(nh, cam_names[i], serial_nos[i], calib_file_names[i]));
     }
-    // must limit the cluster usb bandwidth to support > 2 cameras
-    std::cerr << "FIXME: xiSetParamInt(0, XI_PRM_AUTO_BANDWIDTH_CALCULATION, XI_OFF); \n";
     fixed_init_ = true;
 }
 
@@ -62,9 +60,6 @@ ximea_ros_cluster::ximea_ros_cluster(std::vector<std::string> filenames) : USB_B
         ros::NodeHandle nh(std::string("/") + cam_name);
         add_camera(ximea_ros_driver(nh, filenames[i]));
     }
-
-    // must limit the cluster usb bandwidth to support > 2 cameras
-    std::cerr << "FIXME: xiSetParamInt(0, XI_PRM_AUTO_BANDWIDTH_CALCULATION, XI_OFF); \n";
     fixed_init_ = false;
 }
 
