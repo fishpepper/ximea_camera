@@ -39,7 +39,7 @@ public:
     void applyParameters();
     void errorHandling(XI_RETURN ret, std::string message);
     void enableTrigger(unsigned char trigger_mode);  // 0 none, 1 soft_trigger, 2 hard_trigger_rising edge (unsupported)
-    void limitBandwidth(int mbps);
+    void limitBandwidth(float factor);
     void openDevice();
     void closeDevice();
     void startAcquisition();
@@ -82,6 +82,7 @@ private:
     int exposure_time_;
     bool auto_exposure_;
     bool binning_enabled_;
+    float allocated_bandwidth;
     int downsample_factor_;
     int rect_left_;
     int rect_top_;
