@@ -129,7 +129,7 @@ void ximea_driver::stopAcquisition()
         return;
     }
     stat = xiStopAcquisition(xiH_);
-    errorHandling(stat, "Starting Acquisition");  // die if we cannot stop acquisition.
+    errorHandling(stat, "Stop Acquisition");  // die if we cannot stop acquisition.
     acquisition_active_ = false;
 }
 
@@ -140,7 +140,7 @@ void ximea_driver::startAcquisition()
         return;
     }
     XI_RETURN stat = xiStartAcquisition(xiH_);
-    errorHandling(stat, "Starting Acquisition");
+    errorHandling(stat, "Start Acquisition");
     acquisition_active_ = true;
 }
 
@@ -152,14 +152,20 @@ void ximea_driver::acquireImage()
     {
         return;
     }
-    //try to fetch image:
-    do{
-        //grabbing is stopped ?! (re)start grabbing
-        cerr << "WARNING: ximera acquisition seems to be stopped, will restart now\n";
 
-        xiStartAcquisition(xiH_);
+    //try to fetch an image
+    stat = xiGetImage(xiH_, image_capture_timeout_, &image_);
+
+    //try to restart acq if it stopped for any reason
+    while (stat == XI_ACQUISITION_STOPED){
+        //grabbing is stopped ?! (re)start grabbing
+        std::cerr << "WARNING: ximera acquisition seems to be stopped, will restart now\n";
+
+        stat = xiStartAcquisition(xiH_);
+        errorHandling(stat, "xiStartAcquisition");
+
         stat = xiGetImage(xiH_, image_capture_timeout_, &image_);
-    }while (stat == XI_ACQUISITION_STOPED);
+    }
 
     if (stat != 0){
         std::cerr << "Error on " << cam_name_ << ": xiGetImage resulted in error " <<  stat << std::endl;
