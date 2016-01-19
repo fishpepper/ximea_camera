@@ -18,8 +18,7 @@ All rights reserved.
 
 #define XIMEA_DRIVER_DEBUG_LEVEL XI_DL_FATAL    //XI_DL_DETAIL
 
-ximea_driver::ximea_driver(int serial_no, std::string cam_name)
-{
+ximea_driver::ximea_driver(int serial_no, std::string cam_name){
     serial_no_ = serial_no;
     cam_name_ = cam_name;
     cam_resolution_w = 0;
@@ -27,8 +26,7 @@ ximea_driver::ximea_driver(int serial_no, std::string cam_name)
     assignDefaultValues();
 }
 
-void ximea_driver::assignDefaultValues()
-{
+void ximea_driver::assignDefaultValues(){
     allocated_bandwidth_ = 1.0;
     cams_on_bus_ = 4;
     bandwidth_safety_margin_ = 30;
@@ -51,15 +49,13 @@ void ximea_driver::assignDefaultValues()
     image_capture_timeout_ = 1000;
 }
 
-ximea_driver::ximea_driver(std::string file_name)
-{
+ximea_driver::ximea_driver(std::string file_name){
     assignDefaultValues();
     readParamsFromFile(file_name);
     ROS_INFO_STREAM("ximea_driver: reading paramter values from file: " << file_name);
 }
 
-inline bool ximea_driver::errorHandling(XI_RETURN ret, std::string command, std::string param, float val)
-{
+inline bool ximea_driver::errorHandling(XI_RETURN ret, std::string command, std::string param, float val){
     if (ret != XI_OK){
         std::cout << "ximea_driver: " << command << "(" << param << ", "<< val << " ) failed (errno " << ret << "\n";
         closeDevice();
