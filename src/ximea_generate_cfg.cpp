@@ -251,13 +251,22 @@ int main(int argc, char ** argv) {
             continue;
         }
 
-        file_output << "    gen.add(\""
+
+        file_output << "gen.add(\""
                     << property[i].property << "\", "
                     << property[i].ptype << ", 0, \""
-                    << property[i].description << "\", "
-                    << val_default << ", "
-                    << val_min << ", "
-                    << val_max << ")\n";
+                    << property[i].description << "\", ";
+
+        if ((property[i].ptype == "double_t") || (property[i].ptype == "int_t")) {
+            file_output << val_default << ", "
+                        << val_min << ", "
+                        << val_max << ")\n";
+        } else if (property[i].ptype == "bool_t") {
+            file_output << (val_default?"True":"False") << ")\n";
+        } else {
+            cerr << "ERROR: type " << property[i].ptype << " not supported yet\n";
+            exit(EXIT_FAILURE);
+        }
     }
 
     file_output << "\nexit(gen.generate(PACKAGE, \"ximea_camera\", \"xiAPI\"))\n\n";
