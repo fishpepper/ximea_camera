@@ -3,13 +3,13 @@
   <version>1.0.0</version>
   <name>ximea_camera</name>
   <description>ROS drivers for the ximea xiQ USB 3.0 Cameras</description>
-  <author>Abdelhamid El-Bably, Arun Das, Michael Tribou</author>
+  <author>Abdelhamid El-Bably, Arun Das, Michael Tribou, Simon Schulz</author>
   <maintainer email="ahelbably@uwaterloo.ca">Abdelhamid El-Bably</maintainer>
   <license>BSD</license>
 
   <url type="website">http://www.ros.org/wiki/ximea_camera</url>
-  <url type="repository">https://github.com/wavelab/ximea_camera/</url>
-  <url type="bugtracker">https://github.com/wavelab/ximea_camera/issues</url>
+  <url type="repository">https://github.com/fishpepper/ximea_camera/</url>
+  <url type="bugtracker">https://github.com/fishpepper/ximea_camera/issues</url>
 
   <!-- The *_depend tags are used to specify dependencies -->
   <!-- Dependencies can be catkin packages or system dependencies -->
