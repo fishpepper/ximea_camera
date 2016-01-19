@@ -13,6 +13,7 @@ All rights reserved.
 #ifndef INCLUDE_XIMEA_CAMERA_XIMEA_ROS_CLUSTER_H_
 #define INCLUDE_XIMEA_CAMERA_XIMEA_ROS_CLUSTER_H_
 
+#include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 #include <dynamic_reconfigure/Config.h>
 #include <ximea_camera/ximea_ros_driver.h>
@@ -25,7 +26,7 @@ class ximea_ros_cluster{
  public:
     explicit ximea_ros_cluster(int num_cams);
     explicit ximea_ros_cluster(std::vector < std::string > filenames);
-    void add_camera(ximea_ros_driver xd);
+    void add_camera(boost::shared_ptr<ximea_ros_driver> xd);
     void remove_camera(int serial_no);
 
     // cluster functions
@@ -45,7 +46,7 @@ class ximea_ros_cluster{
     void setROI(int serial_no, int l, int t, int w, int h);
 
  private:
-    std::vector<ximea_ros_driver> cams_;
+    std::vector<boost::shared_ptr<ximea_ros_driver> > cams_;
     std::vector<boost::thread*> threads_;
     bool devices_open_;
     int num_cams_;

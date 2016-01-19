@@ -17,32 +17,29 @@ All rights reserved.
 
 ximea_ros_driver::ximea_ros_driver(const ros::NodeHandle &nh, std::string cam_name, int serial_no,
                                    std::string yaml_url) : ximea_driver(serial_no, cam_name) {
-    pnh_ = nh;
-    cam_info_manager_ = new camera_info_manager::CameraInfoManager(pnh_, cam_name_);
-    cam_info_manager_->loadCameraInfo(yaml_url);
-    it_ = new image_transport::ImageTransport(nh);
-    ros_cam_pub_ = it_->advertise(std::string("image_raw"), 1);
-    cam_info_pub_ = pnh_.advertise<sensor_msgs::CameraInfo>(std::string("camera_info"), 1);
+    common_initialize(nh);
 }
 
 ximea_ros_driver::ximea_ros_driver(const ros::NodeHandle &nh, std::string file_name)
     : ximea_driver(file_name) {
-    pnh_ = nh;
-    cam_info_manager_ = new camera_info_manager::CameraInfoManager(pnh_, cam_name_);
-    cam_info_manager_->loadCameraInfo(yaml_url_);
-    it_ = new image_transport::ImageTransport(nh);
-    ros_cam_pub_ = it_->advertise(std::string("image_raw"), 1);
-    cam_info_pub_ = pnh_.advertise<sensor_msgs::CameraInfo>(std::string("camera_info"), 1);
+    common_initialize(nh);
 }
 
 void ximea_ros_driver::common_initialize(const ros::NodeHandle &nh) {
     pnh_ = nh;
     cam_info_manager_ = new camera_info_manager::CameraInfoManager(pnh_, cam_name_);
-    cam_info_manager_->loadCameraInfo("");  // FIXME: yaml_url
+    cam_info_manager_->loadCameraInfo(yaml_url_);
+
     it_ = new image_transport::ImageTransport(nh);
-    ros_cam_pub_ = it_->advertise(cam_name_ + std::string("/image_raw"), 1);
-    cam_info_pub_ = pnh_.advertise<sensor_msgs::CameraInfo>(cam_name_ +
-                                                            std::string("/camera_info"), 1);
+    ros_cam_pub_ = it_->advertise(std::string("image_raw"), 1);
+    cam_info_pub_ = pnh_.advertise<sensor_msgs::CameraInfo>(std::string("camera_info"), 1);
+
+    // connect to dynamic reconf server
+    std::cout << "connecting to dynamic reconfiguration server\n";
+
+    server = new dynamic_reconfigure::Server<ximea_camera::xiAPIConfig>(pnh_);
+    server->setCallback(boost::bind(&ximea_ros_driver::dynamic_reconfigure_callback,
+                                    this, _1, _2));
 }
 
 void ximea_ros_driver::publishImage(const ros::Time & now) {
@@ -119,7 +116,30 @@ void ximea_ros_driver::setImageDataFormat(std::string image_format) {
 }
 
 
-void ximea_ros_driver::callback(ximea_camera::xiAPIConfig &config, uint32_t level) {
+bool ximea_ros_driver::dynamic_reconfigure_float(const char *param, float value){
+    XI_RETURN result;
+    result = xiSetParamFloat(xiH_, param, value);
+    if (result != XI_OK) {
+        ROS_ERROR_STREAM("ximea_ros_driver: failed to set parameter " << param << " to " << value);
+        return false;
+    } else {
+        return true;
+    }
+}
+
+void ximea_ros_driver::dynamic_reconfigure_callback(ximea_camera::xiAPIConfig &config,
+                                                    uint32_t level) {
+    // ignore incoming requests as long cam is not set up properly
+    if (!hasValidHandle()) {
+        return;
+    }
+
+    // set all paramaters
+    dynamic_reconfigure_float(XI_PRM_EXPOSURE, config.exposure);
+    dynamic_reconfigure_float(XI_PRM_GAIN, config.gain);
+
+
+
     /*XI_RETURN stat;
 
     float tmp;

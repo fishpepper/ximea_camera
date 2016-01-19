@@ -67,7 +67,7 @@ class ximea_driver{
     bool errorHandling(XI_RETURN ret, std::string command, std::string param, float val = 0.0);
 
     bool setParamInt(const char *param, int var, bool global = false);
-    int   getParamInt(const char *param, bool global = false);
+    int  getParamInt(const char *param, bool global = false);
 
     bool  setParamFloat(const char *param, float var, bool global = false);
     float getParamFloat(const char *param, bool global = false);

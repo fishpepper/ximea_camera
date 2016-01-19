@@ -27,9 +27,9 @@ All rights reserved.
 
 #include "ximea_camera/xiAPIConfig.h"
 
-class ximea_ros_driver : public ximea_driver{
+class ximea_ros_driver : public ximea_driver {
  public:
-    ximea_ros_driver(const ros::NodeHandle &nh, std::string cam_name, int serial_no ,
+    ximea_ros_driver(const ros::NodeHandle &nh, std::string cam_name, int serial_no,
                      std::string yaml_url);
     ximea_ros_driver(const ros::NodeHandle &nh, std::string file_name);
     virtual void setImageDataFormat(std::string s);
@@ -41,7 +41,9 @@ class ximea_ros_driver : public ximea_driver{
     void publishImageAndCamInfo();
 
  private:
-    void callback(ximea_camera::xiAPIConfig &config, uint32_t level);
+    void common_initialize(const ros::NodeHandle &nh);
+    void dynamic_reconfigure_callback(ximea_camera::xiAPIConfig &config, uint32_t level);
+    bool dynamic_reconfigure_float(const char *param, float value);
 
     ros::NodeHandle pnh_;
     camera_info_manager::CameraInfoManager *cam_info_manager_;
@@ -55,8 +57,7 @@ class ximea_ros_driver : public ximea_driver{
     int cam_buffer_size_;
     int bpp_;  // the next 2 paramaeters are used by the ros_image_transport publisher
     std::string encoding_;
-
-    void common_initialize(const ros::NodeHandle &nh);
+    dynamic_reconfigure::Server<ximea_camera::xiAPIConfig> *server;
 };
 
 #endif  // INCLUDE_XIMEA_CAMERA_XIMEA_ROS_DRIVER_H_
