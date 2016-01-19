@@ -34,6 +34,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   camera_info_manager
   roslint
+  dynamic_reconfigure
 )
 
 find_package(Boost REQUIRED COMPONENTS system thread)
@@ -98,6 +99,11 @@ find_package(Boost REQUIRED COMPONENTS system thread)
 #   std_msgs  # Or other packages containing msgs
 # )
 
+#add dynamic reconfigure api
+generate_dynamic_reconfigure_options(
+  cfg/xiAPI.cfg
+)
+
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -141,19 +147,23 @@ include_directories(
 link_directories(${XIMEA_LIBRARY_PATH})
 
 ## Declare a cpp executable
- add_executable(ximea_camera_node src/ximea_driver.cpp src/ximea_ros_driver.cpp src/ximea_ros_cluster.cpp src/ximea.cpp )
+add_executable(ximea_camera_node src/ximea_driver.cpp src/ximea_ros_driver.cpp src/ximea_ros_cluster.cpp src/ximea.cpp )
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(ximea2_node ximea2_generate_messages_cpp)
 
+# make sure configure headers are built before any node using them
+add_dependencies(ximea_camera_node ${PROJECT_NAME}_gencfg)
+
+
 ## Specify libraries to link a library or executable target against
- target_link_libraries(ximea_camera_node
- ${XIMEA_LIBRARY}
- ${catkin_LIBRARIES}
- yaml-cpp
- ${Boost_LIBRARIES}
- )
+target_link_libraries(ximea_camera_node
+  ${XIMEA_LIBRARY}
+  ${catkin_LIBRARIES}
+  yaml-cpp
+  ${Boost_LIBRARIES}
+)
 
 
 #############
@@ -211,5 +221,5 @@ roslint_cpp()
 
 
 #workaround for qtcreator ide integration. do not remove!
-file(GLOB_RECURSE NODE_DUMMY_TARGETS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.h)
+file(GLOB_RECURSE NODE_DUMMY_TARGETS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.h *.cfg)
 add_custom_target(node_dummy_target SOURCES ${NODE_DUMMY_TARGETS})

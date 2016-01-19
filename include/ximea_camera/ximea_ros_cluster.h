@@ -17,6 +17,7 @@ All rights reserved.
 #include <boost/thread.hpp>
 #include <string>
 #include <vector>
+#include <dynamic_reconfigure/Config.h>
 
 class ximea_ros_cluster
 {

@@ -13,6 +13,7 @@ All rights reserved.
 #include <ximea_camera/ximea_ros_driver.h>
 #include <string>
 #include <algorithm>
+#include <m3api/xiApi.h>
 
 ximea_ros_driver::ximea_ros_driver(const ros::NodeHandle &nh, std::string cam_name, int serial_no, std::string yaml_url): ximea_driver(serial_no, cam_name)
 {
@@ -136,4 +137,14 @@ void ximea_ros_driver::setImageDataFormat(std::string image_format)
     stat = xiSetParamInt(xiH_, XI_PRM_IMAGE_DATA_FORMAT, image_data_format);
     errorHandling(stat, "image_format");    // if we cannot set the format then there is something wrong we should probably quit then
     image_data_format_ = image_data_format;
+}
+
+
+void ximea_ros_driver::callback(ximea_camera::xiAPIConfig &config, uint32_t level){
+    XI_RETURN stat;
+    float tmp;
+
+    stat = xiGetParamFloat(xiH_, XI_PRM_EXPOSURE, &tmp);
+    errorHandling(stat, "xiGetParamFloat:XI_PRM_EXPOSURE");
+    if (//config.exposure
 }
