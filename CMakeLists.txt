@@ -146,8 +146,12 @@ include_directories(
 ## link against lib path
 link_directories(${XIMEA_LIBRARY_PATH})
 
-## Declare a cpp executable
+## main node executable
 add_executable(ximea_camera_node src/ximea_driver.cpp src/ximea_ros_driver.cpp src/ximea_ros_cluster.cpp src/ximea.cpp )
+
+## helper to create cfg by dumping camera min/max values
+add_executable(ximea_generate_cfg src/ximea_generate_cfg.cpp)
+
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -156,12 +160,17 @@ add_executable(ximea_camera_node src/ximea_driver.cpp src/ximea_ros_driver.cpp s
 # make sure configure headers are built before any node using them
 add_dependencies(ximea_camera_node ${PROJECT_NAME}_gencfg)
 
-
 ## Specify libraries to link a library or executable target against
 target_link_libraries(ximea_camera_node
   ${XIMEA_LIBRARY}
   ${catkin_LIBRARIES}
   yaml-cpp
+  ${Boost_LIBRARIES}
+)
+
+target_link_libraries(ximea_generate_cfg
+  ${XIMEA_LIBRARY}
+  ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
 )
 
