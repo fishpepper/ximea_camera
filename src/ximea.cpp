@@ -15,8 +15,7 @@ All rights reserved.
 #include <string>
 #include <vector>
 
-int main(int argc, char ** argv)
-{
+int main(int argc, char ** argv) {
     ros::init(argc, argv, "ximea");
     ros::NodeHandle nh;
     ros::NodeHandle pnh("~");
@@ -28,23 +27,22 @@ int main(int argc, char ** argv)
     ros::Rate loop(frame_rate_);
 
     // check size of camera file
-    if (file_names.size() == 0)
-    {
-        ROS_ERROR("ximea_driver: No camera files name specified. Please set 'camera_param_file_paths' parameter to camera yaml file locations in launch file");
+    if (file_names.size() == 0) {
+        ROS_ERROR("ximea_driver: No camera files name specified. Please set "
+                  "'camera_param_file_paths' parameter to camera yaml file "
+                  "locations in launch file");
         return 0;
-    }
-    else
-    {
-        for (unsigned int i = 0; i < file_names.size(); i++)
-        {
+    } else {
+        for (unsigned int i = 0; i < file_names.size(); i++) {
             ROS_INFO_STREAM("loading camera parameter file: " << file_names[i] << std::endl);
         }
     }
 
     ximea_ros_cluster xd(file_names);
     xd.clusterInit();
-    while (ros::ok())   // TODO: need to robustify against replugging and cntrlc
-    {
+
+    // TODO(myself): need to robustify against replugging and cntrlc
+    while (ros::ok()) {
         ros::spinOnce();
         xd.clusterAcquire();
         xd.clusterPublishImageAndCamInfo();

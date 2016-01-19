@@ -10,18 +10,19 @@ Copyright 2015  Abdelhamid El-Bably (University of Waterloo)
 All rights reserved.
 
 ********************************************************************************/
-#ifndef XIMEA_CAMERA_XIMEA_ROS_CLUSTER_H
-#define XIMEA_CAMERA_XIMEA_ROS_CLUSTER_H
+#ifndef INCLUDE_XIMEA_CAMERA_XIMEA_ROS_CLUSTER_H_
+#define INCLUDE_XIMEA_CAMERA_XIMEA_ROS_CLUSTER_H_
 
-#include <ximea_camera/ximea_ros_driver.h>
 #include <boost/thread.hpp>
+#include <dynamic_reconfigure/Config.h>
+#include <ximea_camera/ximea_ros_driver.h>
+
 #include <string>
 #include <vector>
-#include <dynamic_reconfigure/Config.h>
 
-class ximea_ros_cluster
-{
-public:
+
+class ximea_ros_cluster{
+ public:
     explicit ximea_ros_cluster(int num_cams);
     explicit ximea_ros_cluster(std::vector < std::string > filenames);
     void add_camera(ximea_ros_driver xd);
@@ -34,8 +35,7 @@ public:
     void clusterPublishCamInfo();
     void clusterPublishImageAndCamInfo();
     void clusterEnd();
-    bool isDeviceOpen()
-    {
+    bool isDeviceOpen() {
         return devices_open_;
     }
 
@@ -44,15 +44,15 @@ public:
     void setImageDataFormat(int serial_no, std::string s);
     void setROI(int serial_no, int l, int t, int w, int h);
 
-private:
+ private:
     std::vector<ximea_ros_driver> cams_;
     std::vector<boost::thread*> threads_;
     bool devices_open_;
     int num_cams_;
-    int getCameraIndex(int serial_no);  // this is private so that no one tries to be smart and open/close our cameras externally, in which case we cannot manage
+    int getCameraIndex(int serial_no);
     const int USB_BUS_SAFETY_MARGIN;
     const int USB3_BANDWIDTH;
     bool fixed_init_;
 };
 
-#endif  // XIMEA_CAMERA_XIMEA_ROS_CLUSTER_H
+#endif  // INCLUDE_XIMEA_CAMERA_XIMEA_ROS_CLUSTER_H_
