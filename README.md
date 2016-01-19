@@ -7,6 +7,7 @@ Copyright 2015
 * Abdelhamid El-Bably (University of Waterloo) [ahelbably@uwaterloo.ca]
 * Arun Das (University of Waterloo) [adas@uwaterloo.ca]
 * Michael Tribou (University of Waterloo) [mjtribou@uwaterloo.ca]
+* Simon Schulz (University of Bielefeld) [sschulz@techfak.uni-bielefeld.de]
 
 All rights reserved.
 
@@ -53,6 +54,7 @@ rect_left: 200
 rect_top: 200
 rect_height: 600
 rect_width: 900
+allocated_bandwidth : 1.0
 image_data_format: "XI_MONO8"
 ```
 * `serial_no` refers to the serial number of the camera
@@ -60,6 +62,7 @@ image_data_format: "XI_MONO8"
 * `yaml_url` is the location of the calibration information file, which is used by the camera info manager to publish the calibration parameters
 * `exposure_time` refers to the image exposure time in microseconds
 * `rect_left, rect_top, rect_height, rect_width` are used to set the image region of interest (ROI). See the Ximea xiQ API for more information (http://www.ximea.com/support/wiki/apis/XiAPI_Manual).
+* `allocated_bandwidth` refers to the usb3 bandwidth fraction you want to assign to this camera (use 1.0 if you have one cam and 0.5 for two etc)
 * `image_data_format`: sets the data format for the image. Currently, formats `XI_MONO16`, `XI_RGB24`, `XI_RGB32`, `XI_RAW8`, `XI_RAW16`, and `XI_MONO8` are supported   
 
 2) Create a launch file for your camera configuration.  A typical launch file will look as follows:
