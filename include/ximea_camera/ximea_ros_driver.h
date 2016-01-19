@@ -21,11 +21,12 @@ All rights reserved.
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <camera_info_manager/camera_info_manager.h>
+#include <dynamic_reconfigure/server.h>
+#include "ximea_camera/xiAPIConfig.h"
 #include <string>
 
 
-class ximea_ros_driver : public ximea_driver
-{
+class ximea_ros_driver : public ximea_driver{
 public:
     ximea_ros_driver(const ros::NodeHandle &nh, std::string cam_name, int serial_no , std::string yaml_url);
     ximea_ros_driver(const ros::NodeHandle &nh, std::string file_name);
@@ -34,7 +35,9 @@ public:
     void publishCamInfo(const ros::Time &now);
     void publishImageAndCamInfo();
 
-protected:
+private:
+    void callback(ximea_camera::xiAPIConfig &config, uint32_t level);
+
     ros::NodeHandle pnh_;
     camera_info_manager::CameraInfoManager *cam_info_manager_;
     image_transport::ImageTransport *it_;
@@ -48,7 +51,6 @@ protected:
     int bpp_;  // the next 2 paramaeters are used by the ros_image_transport publisher
     std::string encoding_;
 
-private:
     void common_initialize(const ros::NodeHandle &nh);
 };
 

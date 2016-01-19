@@ -13,7 +13,6 @@ All rights reserved.
 #ifndef XIMEA_CAMERA_XIMEA_DRIVER_H
 #define XIMEA_CAMERA_XIMEA_DRIVER_H
 
-// Sample for XIMEA Software Package V2.57
 #include <m3api/xiApi.h>
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
@@ -37,7 +36,6 @@ public:
 
     int readParamsFromFile(std::string file_name);
     void applyParameters();
-    void errorHandling(XI_RETURN ret, std::string message);
     void enableTrigger(unsigned char trigger_mode);  // 0 none, 1 soft_trigger, 2 hard_trigger_rising edge (unsupported)
     void limitBandwidth(float factor);
     void openDevice();
@@ -46,23 +44,30 @@ public:
     void stopAcquisition();
     void acquireImage();
     void triggerDevice();
-    int getSerialNo() const
-    {
+    int getSerialNo() const{
         return serial_no_;
     }
     virtual void setImageDataFormat(std::string s);  // this is virtual because the ros class needs to do a bit more work to publish the right image
     void setROI(int rect_left, int rect_top, int rect_width, int rect_height);
     void setExposure(int time);
-    bool hasValidHandle()
-    {
+    bool hasValidHandle(){
         return xiH_ == NULL ? false : true;
     }
-    const XI_IMG& getImage()const
-    {
+    const XI_IMG& getImage()const{
         return image_;
     }
 
 protected:
+    bool errorHandling(XI_RETURN ret, std::string command, std::string param, float val = 0.0);
+
+    bool setParamInt(const char *param, int var, bool global = false);
+    int   getParamInt(const char *param, bool global = false);
+
+    bool  setParamFloat(const char *param, float var, bool global = false);
+    float getParamFloat(const char *param, bool global = false);
+
+    std::string getParamString(const char *param, bool global = false);
+
     std::string cam_name_;
     std::string image_data_format_;  // One of XI_MONO8, XI_RGB24, XI_RGB32, XI_RAW
     std::string yaml_url_;
@@ -82,7 +87,7 @@ private:
     int exposure_time_;
     bool auto_exposure_;
     bool binning_enabled_;
-    float allocated_bandwidth;
+    float allocated_bandwidth_;
     int downsample_factor_;
     int rect_left_;
     int rect_top_;
