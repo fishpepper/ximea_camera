@@ -14,28 +14,33 @@ All rights reserved.
 #ifndef INCLUDE_XIMEA_CAMERA_XIMEA_ROS_DRIVER_H_
 #define INCLUDE_XIMEA_CAMERA_XIMEA_ROS_DRIVER_H_
 
-#include <ximea_camera/ximea_driver.h>
-#include <ros/ros.h>
-#include <image_transport/image_transport.h>
-#include <image_transport/publisher.h>
-#include <sensor_msgs/Image.h>
-#include <sensor_msgs/CameraInfo.h>
 #include <camera_info_manager/camera_info_manager.h>
 #include <dynamic_reconfigure/server.h>
-#include "ximea_camera/xiAPIConfig.h"
+#include <image_transport/image_transport.h>
+#include <image_transport/publisher.h>
+#include <ros/ros.h>
+#include <sensor_msgs/CameraInfo.h>
+#include <sensor_msgs/Image.h>
+#include <ximea_camera/ximea_driver.h>
+
 #include <string>
 
+#include "ximea_camera/xiAPIConfig.h"
 
 class ximea_ros_driver : public ximea_driver{
-public:
-    ximea_ros_driver(const ros::NodeHandle &nh, std::string cam_name, int serial_no , std::string yaml_url);
+ public:
+    ximea_ros_driver(const ros::NodeHandle &nh, std::string cam_name, int serial_no ,
+                     std::string yaml_url);
     ximea_ros_driver(const ros::NodeHandle &nh, std::string file_name);
     virtual void setImageDataFormat(std::string s);
-    void publishImage(const ros::Time & now);  // since these 2 functions should have the same time stamp we leave it up to the user to specify the timeif it is needed to do one or the other
+
+    // since these 2 functions should have the same time stamp we leave it up to the user to
+    // specify the time if it is needed to do one or the other
+    void publishImage(const ros::Time & now);
     void publishCamInfo(const ros::Time &now);
     void publishImageAndCamInfo();
 
-private:
+ private:
     void callback(ximea_camera::xiAPIConfig &config, uint32_t level);
 
     ros::NodeHandle pnh_;

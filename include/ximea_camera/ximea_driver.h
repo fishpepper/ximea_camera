@@ -10,33 +10,37 @@ Copyright 2015  Abdelhamid El-Bably (University of Waterloo)
 All rights reserved.
 
 ********************************************************************************/
-#ifndef XIMEA_CAMERA_XIMEA_DRIVER_H
-#define XIMEA_CAMERA_XIMEA_DRIVER_H
+#ifndef INCLUDE_XIMEA_CAMERA_XIMEA_DRIVER_H_
+#define INCLUDE_XIMEA_CAMERA_XIMEA_DRIVER_H_
 
-#include <m3api/xiApi.h>
-#include <ros/ros.h>
+#include <camera_info_manager/camera_info_manager.h>
 #include <image_transport/image_transport.h>
 #include <image_transport/publisher.h>
-#include <sensor_msgs/Image.h>
+#include <m3api/xiApi.h>
+#include <ros/ros.h>
 #include <sensor_msgs/CameraInfo.h>
+#include <sensor_msgs/Image.h>
 #include <std_msgs/UInt8.h>
-#include <camera_info_manager/camera_info_manager.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <iostream>
-#include <string>
-#include <fstream>
 #include <yaml-cpp/yaml.h>
 
-class ximea_driver
-{
-public:
-    explicit ximea_driver(int serial_no = 0 , std::string cam_name = "");  // if no serial no is specified select the first cam on the bus
+#include <fstream>
+#include <iostream>
+#include <string>
+
+class ximea_driver{
+ public:
+    // if no serial no is specified select the first cam on the bus
+    explicit ximea_driver(int serial_no = 0 , std::string cam_name = "");
     explicit ximea_driver(std::string file_name);
 
     int readParamsFromFile(std::string file_name);
     void applyParameters();
-    void enableTrigger(unsigned char trigger_mode);  // 0 none, 1 soft_trigger, 2 hard_trigger_rising edge (unsupported)
+
+    // 0 none, 1 soft_trigger, 2 hard_trigger_rising edge (unsupported) FIXME
+    void enableTrigger(unsigned char trigger_mode);
+
     void limitBandwidth(float factor);
     void openDevice();
     void closeDevice();
@@ -44,20 +48,22 @@ public:
     void stopAcquisition();
     void acquireImage();
     void triggerDevice();
-    int getSerialNo() const{
+    int getSerialNo() const {
         return serial_no_;
     }
-    virtual void setImageDataFormat(std::string s);  // this is virtual because the ros class needs to do a bit more work to publish the right image
+
+    // this is virtual because the ros class needs to do a bit more work to publish the right image
+    virtual void setImageDataFormat(std::string s);
     void setROI(int rect_left, int rect_top, int rect_width, int rect_height);
     void setExposure(int time);
-    bool hasValidHandle(){
+    bool hasValidHandle() {
         return xiH_ == NULL ? false : true;
     }
-    const XI_IMG& getImage()const{
+    const XI_IMG& getImage()const {
         return image_;
     }
 
-protected:
+ protected:
     bool errorHandling(XI_RETURN ret, std::string command, std::string param, float val = 0.0);
 
     bool setParamInt(const char *param, int var, bool global = false);
@@ -74,7 +80,7 @@ protected:
     HANDLE xiH_;
     XI_IMG image_;
 
-private:
+ private:
     void assignDefaultValues();
     void fetchLimits();
 
@@ -100,4 +106,4 @@ private:
     unsigned char trigger_mode_;
 };
 
-#endif  // XIMEA_CAMERA_XIMEA_DRIVER_H
+#endif  // INCLUDE_XIMEA_CAMERA_XIMEA_DRIVER_H_
