@@ -11,8 +11,8 @@ All rights reserved.
 
 ********************************************************************************/
 
-#ifndef XIMEA_CAMERA_XIMEA_ROS_DRIVER_H
-#define XIMEA_CAMERA_XIMEA_ROS_DRIVER_H
+#ifndef INCLUDE_XIMEA_CAMERA_XIMEA_ROS_DRIVER_H_
+#define INCLUDE_XIMEA_CAMERA_XIMEA_ROS_DRIVER_H_
 
 #include <ximea_camera/ximea_driver.h>
 #include <ros/ros.h>
@@ -54,4 +54,4 @@ private:
     void common_initialize(const ros::NodeHandle &nh);
 };
 
-#endif  // XIMEA_CAMERA_XIMEA_ROS_DRIVER_H
+#endif  // INCLUDE_XIMEA_CAMERA_XIMEA_ROS_DRIVER_H_
