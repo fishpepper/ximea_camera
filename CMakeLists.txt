@@ -165,6 +165,20 @@ target_link_libraries(ximea_camera_node
   ${Boost_LIBRARIES}
 )
 
+#############
+## style guide ##
+#############
+set(ENABLE_CPPLINT 1)
+include(${CMAKE_CURRENT_SOURCE_DIR}/stylecheck/CpplintWrapper.cmake)
+CPPLINT_RECURSIVE(cpplint_include
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_BINARY_DIR}/include)
+CPPLINT_RECURSIVE(cpplint_src
+  ${CMAKE_CURRENT_SOURCE_DIR}/src
+  ${CMAKE_CURRENT_SOURCE_DIR}/src
+  ${CMAKE_CURRENT_BINARY_DIR}/src)
+add_dependencies(ximea_camera_node cpplint_src cpplint_include)
 
 #############
 ## Install ##
