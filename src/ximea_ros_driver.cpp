@@ -118,7 +118,7 @@ void ximea_ros_driver::setImageDataFormat(std::string image_format) {
 }
 
 
-bool ximea_ros_driver::dynamic_reconfigure_float(const char *param, float value){
+bool ximea_ros_driver::dynamic_reconfigure_float(const char *param, float value) {
     XI_RETURN result;
     result = xiSetParamFloat(xiH_, param, value);
     if (result != XI_OK) {
