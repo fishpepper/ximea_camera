@@ -37,16 +37,15 @@ cfg_entry_t property[] = {
     {"aeag_roi_offset_y", "Automatic exposure/gain ROI offset Y", "int_t"},
     {"aeag_roi_width", "Automatic exposure/gain ROI Width", "int_t"},
     {"aeag_roi_height", "Automatic exposure/gain ROI Height", "int_t"},
-    {"bpc", "Correction of bad pixels", "bool_t"}
+    {"bpc", "Correction of bad pixels", "bool_t"},
+    {"auto_wb", "Automatic white balance", "bool_t"},
+    {"width", "Width of the Image provided by the device (in pixels)", "int_t"},
+    {"height", "Height of the Image provided by the device (in pixels)", "int_t"},
+    {"offsetX", "Horizontal offset from the origin to the area of interest (in pixels)", "int_t"},
+    {"offsetY", "Vertical offset from the origin to the area of interest (in pixels)", "int_t"}
 };
 
-/*#gen.add("auto_wb", double_t, 0, "Automatic white balance ", 0.5, 0, 1)
-#gen.add("manual_wb", double_t, 0, "Calculates White Balance(xiGetImage function must be called) ", 0.5, 0, 1)
-#gen.add("wb_kr", double_t, 0, "White balance red coefficient ", 0.5, 0, 1)
-#gen.add("wb_kg", double_t, 0, "White balance green coefficient ", 0.5, 0, 1)
-#gen.add("wb_kb", double_t, 0, "White balance blue coefficient ", 0.5, 0, 1)
-#gen.add("width", double_t, 0, "Width of the Image provided by the device (in pixels). ", 0.5, 0, 1)
-#gen.add("height", double_t, 0, "Height of the Image provided by the device (in pixels). ", 0.5, 0, 1)
+/*
 #gen.add("offsetX", double_t, 0, "Horizontal offset from the origin to the area of interest (in pixels). ", 0.5, 0, 1)
 #gen.add("offsetY", double_t, 0, "Vertical offset from the origin to the area of interest (in pixels). ", 0.5, 0, 1)
 #gen.add("region_selector", double_t, 0, "Selects Region in Multiple ROI which parameters are set by width, height, ... ,region mode ", 0.5, 0, 1)
@@ -188,7 +187,7 @@ int main(int argc, char ** argv) {
     HANDLE handle;
     unsigned int camera_count;
 
-    if (argc != 2){
+    if (argc != 2) {
         cerr << "ERROR: invalid parameter count\n\n";
         cerr << "usage: " << argv[0] << " " << "<output file>\n\n";
         exit(EXIT_FAILURE);
@@ -230,6 +229,11 @@ int main(int argc, char ** argv) {
         float val_min;
         float val_max;
         float val_default;
+
+        // fine tune some parameters:
+        if (property[i].description == "exposure"){
+            val_max = 100000;
+        }
 
         result = xiGetParamFloat(handle, property[i].property.c_str(), &val_default);
         if (result != XI_OK) {

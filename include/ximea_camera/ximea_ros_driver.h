@@ -46,6 +46,7 @@ class ximea_ros_driver : public ximea_driver {
     void common_initialize(const ros::NodeHandle &nh);
     void dynamic_reconfigure_callback(ximea_camera::xiAPIConfig &config, uint32_t level);
     bool dynamic_reconfigure_float(const char *param, float value);
+    bool dynamic_reconfigure_int(const char *param, int value);
 
     ros::NodeHandle pnh_;
     camera_info_manager::CameraInfoManager *cam_info_manager_;

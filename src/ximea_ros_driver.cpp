@@ -16,6 +16,7 @@ All rights reserved.
 
 #include <algorithm>
 #include <string>
+#include <vector>
 
 ximea_ros_driver::ximea_ros_driver(const ros::NodeHandle &nh, std::string cam_name, int serial_no,
                                    std::string yaml_url) : ximea_driver(serial_no, cam_name) {
@@ -117,6 +118,16 @@ void ximea_ros_driver::setImageDataFormat(std::string image_format) {
     image_data_format_ = image_data_format;
 }
 
+bool ximea_ros_driver::dynamic_reconfigure_int(const char *param, int value) {
+    XI_RETURN result;
+    result = xiSetParamInt(xiH_, param, value);
+    if (result != XI_OK) {
+        ROS_ERROR_STREAM("ximea_ros_driver: failed to set parameter " << param << " to " << value);
+        return false;
+    } else {
+        return true;
+    }
+}
 
 bool ximea_ros_driver::dynamic_reconfigure_float(const char *param, float value) {
     XI_RETURN result;
@@ -140,14 +151,29 @@ void ximea_ros_driver::dynamic_reconfigure_callback(ximea_camera::xiAPIConfig &c
     dynamic_reconfigure_float(XI_PRM_EXPOSURE, config.exposure);
     dynamic_reconfigure_float(XI_PRM_GAIN, config.gain);
 
+    // use some tricks to iterate through all config entries:
+    std::vector<ximea_camera::xiAPIConfig::AbstractParamDescriptionConstPtr>::const_iterator _i;
+    for (_i = config.__getParamDescriptions__().begin();
+         _i != config.__getParamDescriptions__().end(); ++_i) {
+        boost::any val;
+        boost::shared_ptr<const ximea_camera::xiAPIConfig::AbstractParamDescription>
+                description = *_i;
 
+        // fetch actual value:
+        description->getValue(config, val);
 
-    /*XI_RETURN stat;
+        // std::cout << description->name << " " << description->type << "\n";
 
-    float tmp;
-
-
-    stat = xiGetParamFloat(xiH_, XI_PRM_EXPOSURE, &tmp);
-    errorHandling(stat, "xiGetParamFloat:XI_PRM_EXPOSURE");
-    if (//config.exposure*/
+        // copy data to ximea api:
+        if (description->type == "double") {
+            dynamic_reconfigure_float(description->name.c_str(),
+                                      static_cast<float>(boost::any_cast<double>(val)));
+        } else if (description->type == "bool") {
+            dynamic_reconfigure_int(description->name.c_str(), (boost::any_cast<bool>(val))?1:0);
+        } else if (description->type == "int") {
+            dynamic_reconfigure_int(description->name.c_str(), boost::any_cast<int>(val));
+        } else {
+            std::cerr << "ERROR: unsupported config type " << description->type  << "\n";
+        }
+    }
 }
