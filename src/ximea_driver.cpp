@@ -55,11 +55,11 @@ ximea_driver::ximea_driver(std::string file_name) {
     ROS_INFO_STREAM("ximea_driver: reading paramter values from file: " << file_name);
 }
 
-inline bool ximea_driver::errorHandling(XI_RETURN ret, std::string command,
+bool ximea_driver::errorHandling(XI_RETURN ret, std::string command,
                                         std::string param, float val) {
     if (ret != XI_OK) {
         std::cout << "ximea_driver: " << command << "(" << param << ", "<< val
-                  << " ) failed (errno " << ret << "\n";
+                  << " ) failed (errno " << ret << ", handle=" << xiH_ << ")\n";
         closeDevice();
         return false;
     } else {
@@ -106,7 +106,7 @@ void ximea_driver::openDevice() {
 
     // some info
     std::cout << "Opened Camera with Serial " << camera_serial << " and name '"
-              << camera_name << "' \n";
+              << camera_name << "' (handle " << xiH_ << ")\n";
 
     // limit bandwidth
     // in case multiple cameras share the same bus we
@@ -416,14 +416,14 @@ void ximea_driver::limitBandwidth(float factor) {
     setParamInt(XI_PRM_LIMIT_BANDWIDTH , cam_bandwidth);
 }
 
-inline bool ximea_driver::setParamInt(const char *param, int var, bool global) {
+bool ximea_driver::setParamInt(const char *param, int var, bool global) {
     // global or device handle?
     HANDLE handle = (global)?0:xiH_;
     XI_RETURN stat = xiSetParamInt(handle, param, var);
     return errorHandling(stat, "xiSetParamInt", param, var);
 }
 
-inline int ximea_driver::getParamInt(const char *param, bool global) {
+int ximea_driver::getParamInt(const char *param, bool global) {
     int var;
     // global or device handle?
     HANDLE handle = (global)?0:xiH_;
@@ -432,14 +432,14 @@ inline int ximea_driver::getParamInt(const char *param, bool global) {
     return var;
 }
 
-inline bool ximea_driver::setParamFloat(const char *param, float var, bool global) {
+bool ximea_driver::setParamFloat(const char *param, float var, bool global) {
     // global or device handle?
     HANDLE handle = (global)?0:xiH_;
     XI_RETURN stat = xiSetParamFloat(handle, param, var);
     return errorHandling(stat, "setParamFloat", param, var);
 }
 
-inline float ximea_driver::getParamFloat(const char *param, bool global) {
+float ximea_driver::getParamFloat(const char *param, bool global) {
     float var;
     // global or device handle?
     HANDLE handle = (global)?0:xiH_;
@@ -448,7 +448,7 @@ inline float ximea_driver::getParamFloat(const char *param, bool global) {
     return var;
 }
 
-inline std::string ximea_driver::getParamString(const char *param, bool global) {
+std::string ximea_driver::getParamString(const char *param, bool global) {
     char var[256];
     // global or device handle?
     HANDLE handle = (global)?0:xiH_;
