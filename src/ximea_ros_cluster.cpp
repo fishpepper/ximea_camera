@@ -28,7 +28,7 @@ std::string calib_file_names[3] = {
 std::string getCamNameFromYaml(std::string file_name) {
     std::ifstream fin(file_name.c_str());
     if (fin.fail()) {
-        ROS_ERROR_STREAM("could not open file " << file_name.c_str() << std::endl);
+        ROS_ERROR_STREAM("could not open file '" << file_name.c_str() << "'" << std::endl);
         exit(-1);  // this has to be changed
     }
 

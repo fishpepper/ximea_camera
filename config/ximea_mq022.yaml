@@ -8,4 +8,4 @@ rect_height: 1080
 rect_width: 2040
 allocated_bandwidth: 1.0
 use_cam_timestamp: true
-image_data_format: "XI_RGB24"
+image_data_format: "XI_RAW8"

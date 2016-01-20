@@ -12,6 +12,8 @@ Copyright 2016  Abdelhamid El-Bably (University of Waterloo)
 All rights reserved.
 
 ********************************************************************************/
+
+#include <sensor_msgs/image_encodings.h>
 #include <ximea_camera/ximea_ros_driver.h>
 
 #include <algorithm>
@@ -122,11 +124,63 @@ void ximea_ros_driver::setImageDataFormat(std::string image_format) {
         bpp_ = 1;
     } else if (image_format == std::string("XI_RAW8")) {
         image_data_format = XI_RAW8;
-        encoding_ = std::string("mono8");
+        // in order to get the right bayer pattern we need to know the
+        // bayer pattern of the sensor
+        switch (bayer_filter_array_) {
+        default:
+        case(XI_CFA_NONE):
+        case(XI_CFA_CMYG):
+        case(XI_CFA_RGR):
+            // fallback for invalid/unsupported values
+            encoding_ = std::string("mono8");
+            break;
+
+        case(XI_CFA_BAYER_RGGB):
+            encoding_ = sensor_msgs::image_encodings::BAYER_RGGB8;
+            break;
+
+        case(XI_CFA_BAYER_BGGR):
+            encoding_ = sensor_msgs::image_encodings::BAYER_BGGR8;
+            break;
+
+        case(XI_CFA_BAYER_GRBG):
+            encoding_ = sensor_msgs::image_encodings::BAYER_GRBG8;
+            break;
+
+        case(XI_CFA_BAYER_GBRG):
+            encoding_ = sensor_msgs::image_encodings::BAYER_GBRG8;
+            break;
+        }
         bpp_ = 1;
     } else if (image_format == std::string("XI_RAW16")) {
         image_data_format = XI_RAW16;
-        encoding_ = std::string("mono16");
+        // in order to get the right bayer pattern we need to know the
+        // bayer pattern of the sensor
+        switch (bayer_filter_array_) {
+        default:
+        case(XI_CFA_NONE):
+        case(XI_CFA_CMYG):
+        case(XI_CFA_RGR):
+            // fallback for invalid/unsupported values
+            encoding_ = std::string("mono16");
+            break;
+
+        case(XI_CFA_BAYER_RGGB):
+            encoding_ = sensor_msgs::image_encodings::BAYER_RGGB16;
+            break;
+
+        case(XI_CFA_BAYER_BGGR):
+            encoding_ = sensor_msgs::image_encodings::BAYER_BGGR16;
+            break;
+
+        case(XI_CFA_BAYER_GRBG):
+            encoding_ = sensor_msgs::image_encodings::BAYER_GRBG16;
+            break;
+
+        case(XI_CFA_BAYER_GBRG):
+            encoding_ = sensor_msgs::image_encodings::BAYER_GBRG16;
+            break;
+        }
         bpp_ = 2;
     } else {
         image_data_format = XI_MONO8;

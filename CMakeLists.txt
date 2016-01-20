@@ -34,6 +34,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   camera_info_manager
   roslint
+  nodelet
   dynamic_reconfigure
 )
 
@@ -116,7 +117,7 @@ generate_dynamic_reconfigure_options(
 catkin_package(
   #INCLUDE_DIRS include
   LIBRARIES ximea_camera
-  CATKIN_DEPENDS roscpp
+  CATKIN_DEPENDS roscpp nodelet
   DEPENDS system_lib TinyXML
   DEPENDS boost
 )
@@ -136,21 +137,20 @@ include_directories(
   ${Boost_INCLUDE_DIRS}
 )
 
-
-## Declare a cpp library
-# add_library(ximea2
-#   src/${PROJECT_NAME}/ximea2.cpp
-# )
-
-
 ## link against lib path
 link_directories(${XIMEA_LIBRARY_PATH})
 
 ## main node executable
 add_executable(ximea_camera_node src/ximea_driver.cpp src/ximea_ros_driver.cpp src/ximea_ros_cluster.cpp src/ximea.cpp )
 
+## nodelet library
+add_library(ximea_nodelet src/ximea_nodelet.cpp src/ximea_driver.cpp src/ximea_ros_driver.cpp )
+
 ## helper to create cfg by dumping camera min/max values
 add_executable(ximea_generate_cfg src/ximea_generate_cfg.cpp)
+
+## test for developing
+add_executable(ximea_nodelet_test src/ximea_nodelet_test.cpp)
 
 
 ## Add cmake target dependencies of the executable/library
@@ -159,6 +159,7 @@ add_executable(ximea_generate_cfg src/ximea_generate_cfg.cpp)
 
 # make sure configure headers are built before any node using them
 add_dependencies(ximea_camera_node ${PROJECT_NAME}_gencfg)
+add_dependencies(ximea_nodelet ${PROJECT_NAME}_gencfg)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(ximea_camera_node
@@ -167,6 +168,21 @@ target_link_libraries(ximea_camera_node
   yaml-cpp
   ${Boost_LIBRARIES}
 )
+
+target_link_libraries(ximea_nodelet
+  ${XIMEA_LIBRARY}
+  ${catkin_LIBRARIES}
+  yaml-cpp
+  ${Boost_LIBRARIES}
+)
+
+target_link_libraries(ximea_nodelet_test
+  ${XIMEA_LIBRARY}
+  ${catkin_LIBRARIES}
+  yaml-cpp
+  ${Boost_LIBRARIES}
+)
+
 
 target_link_libraries(ximea_generate_cfg
   ${XIMEA_LIBRARY}
@@ -210,6 +226,13 @@ install(TARGETS ximea_camera_node
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
+## Mark executables and/or libraries for installation
+install(TARGETS ximea_nodelet
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 ## Mark cpp header files for installation
 # install(DIRECTORY include/${PROJECT_NAME}/
 #   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
@@ -221,6 +244,16 @@ install(TARGETS ximea_camera_node
 install(DIRECTORY config
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   FILES_MATCHING PATTERN "*.yaml"
+)
+
+install(DIRECTORY launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  FILES_MATCHING PATTERN "*.launch"
+)
+
+
+install(FILES nodelet.xml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
 #############
@@ -244,5 +277,5 @@ roslint_cpp()
 
 
 #workaround for qtcreator ide integration. do not remove!
-file(GLOB_RECURSE NODE_DUMMY_TARGETS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.h *.cfg *.yaml)
+file(GLOB_RECURSE NODE_DUMMY_TARGETS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.h *.cfg *.yaml *.xml)
 add_custom_target(node_dummy_target SOURCES ${NODE_DUMMY_TARGETS})

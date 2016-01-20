@@ -1,0 +1,17 @@
+<launch>
+  <node pkg="nodelet" type="nodelet" name="ximea_nodelet_manager" args="manager" output="screen"/>
+
+  <arg name="camera" default="camera" />
+
+  <node pkg="nodelet" type="nodelet" name="ximea_nodelet" args="load ximea_camera/ximea_nodelet ximea_nodelet_manager _settings_yaml:=/tmp/flobi-minimal-rsb-nightly/share/ximea_camera/config/ximea_mq022.yaml">
+  </node>                 
+
+  <!-- Debayer and publish monochrome and color topics -->
+  <node pkg="nodelet" type="nodelet" name="debayer" args="load image_proc/debayer ximea_nodelet_manager">
+    <remap from="image_raw" to="/camera/image_raw" />
+    <remap from="image_color" to="/camera/image_color" />
+  </node>
+
+
+</launch>
+
