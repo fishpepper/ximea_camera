@@ -115,7 +115,7 @@ generate_dynamic_reconfigure_options(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  #INCLUDE_DIRS include
+  INCLUDE_DIRS include
   LIBRARIES ximea_camera
   CATKIN_DEPENDS roscpp nodelet
   DEPENDS system_lib TinyXML
@@ -149,9 +149,6 @@ add_library(ximea_nodelet src/ximea_nodelet.cpp src/ximea_driver.cpp src/ximea_r
 ## helper to create cfg by dumping camera min/max values
 add_executable(ximea_generate_cfg src/ximea_generate_cfg.cpp)
 
-## test for developing
-add_executable(ximea_nodelet_test src/ximea_nodelet_test.cpp)
-
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -175,14 +172,6 @@ target_link_libraries(ximea_nodelet
   yaml-cpp
   ${Boost_LIBRARIES}
 )
-
-target_link_libraries(ximea_nodelet_test
-  ${XIMEA_LIBRARY}
-  ${catkin_LIBRARIES}
-  yaml-cpp
-  ${Boost_LIBRARIES}
-)
-
 
 target_link_libraries(ximea_generate_cfg
   ${XIMEA_LIBRARY}
