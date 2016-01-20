@@ -29,7 +29,10 @@ All rights reserved.
 
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <string>
+
+#include "ximea_camera/ximea_param.h"
 
 class ximea_driver{
  public:
@@ -61,6 +64,7 @@ class ximea_driver{
     bool hasValidHandle() {
         return xiH_ == NULL ? false : true;
     }
+
     const XI_IMG& getImage()const {
         return image_;
     }
@@ -79,8 +83,14 @@ class ximea_driver{
     std::string cam_name_;
     std::string image_data_format_;  // One of XI_MONO8, XI_RGB24, XI_RGB32, XI_RAW
     std::string yaml_url_;
+
     HANDLE xiH_;
     XI_IMG image_;
+
+    typedef std::map<std::string, float> float_param_map_t;
+    float_param_map_t float_param_map;
+    typedef std::map<std::string, int> int_param_map_t;
+    int_param_map_t int_param_map;
 
  private:
     void assignDefaultValues();

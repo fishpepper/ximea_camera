@@ -231,7 +231,7 @@ int main(int argc, char ** argv) {
         float val_default;
 
         // fine tune some parameters:
-        if (property[i].description == "exposure"){
+        if (property[i].description == "exposure") {
             val_max = 100000;
         }
 
