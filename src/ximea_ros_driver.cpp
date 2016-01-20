@@ -46,23 +46,45 @@ void ximea_ros_driver::common_initialize(const ros::NodeHandle &nh) {
 }
 
 void ximea_ros_driver::publishImage(const ros::Time & now) {
+    // cast xiapi buffer to cam buffer
     cam_buffer_ = reinterpret_cast<char *>(image_.bp);
     cam_buffer_size_ = image_.width * image_.height * bpp_;
+
+    // set timestamp:
+    ros::Time timestamp;
+    if (use_cam_timestamp_) {
+        // use camera timestamp
+        // camera timestamp was reset during ximea_driver::sync_camera_timestamp() call
+        // and the offset to the local time was stored. in order to calc
+        // the actual timestamp we have to add those two values:
+        timestamp = ros::Time::fromBoost(camera_to_localtime_offset_)
+                + ros::Duration(image_.tsSec, image_.tsUSec*1000L);
+    } else {
+        // use incoming time from ros::Time::now() call
+        timestamp = now;
+    }
+
+    // store value in ros msg
+    ros_image_.header.stamp = timestamp;
+
+    // setup image parameters
     ros_image_.data.resize(cam_buffer_size_);
     ros_image_.encoding = encoding_;
-    ros_image_.width = image_.width;
+    ros_image_.width  = image_.width;
     ros_image_.height = image_.height;
-    ros_image_.step = image_.width * bpp_;
+    ros_image_.step   = image_.width * bpp_;
 
+    // copy data to ros message
     copy(reinterpret_cast<char *>(cam_buffer_),
          (reinterpret_cast<char *>(cam_buffer_)) + cam_buffer_size_,
          ros_image_.data.begin());
 
+    // publish message
     ros_cam_pub_.publish(ros_image_);
 }
 
 void ximea_ros_driver::publishCamInfo(const ros::Time &now) {
-    ros_image_.header.stamp = now;
+    cam_info_.header.stamp = now;
     cam_info_ = cam_info_manager_->getCameraInfo();
     cam_info_pub_.publish(cam_info_);
 }
@@ -72,6 +94,7 @@ void ximea_ros_driver::publishImageAndCamInfo() {
     publishImage(now);
     publishCamInfo(now);
 }
+
 
 void ximea_ros_driver::setImageDataFormat(std::string image_format) {
     XI_RETURN stat;
@@ -142,7 +165,7 @@ bool ximea_ros_driver::dynamic_reconfigure_float(const char *param, float value)
     return setParamFloat(param, value);
 }
 
-void ximea_ros_driver::dynamic_reconfigure_callback(ximea_camera::xiAPIConfig &config,
+void ximea_ros_driver::dynamic_reconfigure_callback(const ximea_camera::xiAPIConfig &config,
                                                     uint32_t level) {
     // ignore incoming requests as long cam is not set up properly
     if (!hasValidHandle()) {

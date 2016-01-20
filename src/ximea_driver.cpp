@@ -13,6 +13,8 @@ All rights reserved.
 
 ********************************************************************************/
 
+#include <boost/date_time.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <ximea_camera/ximea_driver.h>
 #include <exception>
 #include <sstream>
@@ -50,6 +52,7 @@ void ximea_driver::assignDefaultValues() {
     image_.bp_size = 0;
     acquisition_active_ = false;
     image_capture_timeout_ = 1000;
+    camera_to_localtime_offset_ = boost::posix_time::microsec_clock::local_time();
 }
 
 ximea_driver::ximea_driver(std::string file_name) {
@@ -65,7 +68,10 @@ bool ximea_driver::errorHandling(XI_RETURN ret, std::string command,
                   << " ) failed (errno " << ret << ", handle=" << xiH_ << ")\n";
         // handle error cases:
         if (ret == XI_INVALID_ARG) {
-            throw std::invalid_argument("xiAPI: invalid parameter");
+             throw std::invalid_argument("xiAPI: invalid parameter (XI_INVALID_ARG)");
+        } else if (ret == XI_WRONG_PARAM_VALUE) {
+            throw std::invalid_argument("xiAPI: invalid parameter value passed "
+                                        "(XI_WRONG_PARAM_VALUE)");
         } else {
             closeDevice();
             exit(EXIT_FAILURE);
@@ -126,6 +132,22 @@ void ximea_driver::openDevice() {
     fetchLimits();
 
     applyParameters();
+
+    sync_camera_timestamp();
+}
+
+void ximea_driver::sync_camera_timestamp() {
+    // this will store the current time as a timestamp
+    // and trigger a reset of the cameras internal timestamp
+    // assuming that the setParamInt call is fast enough
+    // we should get a good estimate for the difference between
+    // the system time and the camera timestamp
+
+    // store local time
+    camera_to_localtime_offset_ = boost::posix_time::microsec_clock::local_time();
+
+    // and trigger a timestamp reset, this will immediately reset the internal ts counter to zero
+    setParamInt(XI_PRM_TS_RST_SOURCE, XI_TS_RST_SRC_SW);
 }
 
 void ximea_driver::closeDevice() {
@@ -353,7 +375,14 @@ int ximea_driver::readParamsFromFile(std::string file_name) {
 
     try {
         allocated_bandwidth_ = doc["allocated_bandwidth"].as<float>();
-    } catch (std::runtime_error) { std::cerr << "missing parameter allocated_bandwidth\n"; }
+    } catch (std::runtime_error) { std::cerr << "missing parameter allocated_bandwidth. "
+                                                "this is mandatory!\n";
+                                   exit(EXIT_FAILURE); }
+
+    try {
+        use_cam_timestamp_ = doc["use_cam_timestamp"].as<bool>();
+        std::cerr << doc["use_cam_timestamp"];
+    } catch (std::runtime_error) { std::cerr << "missing parameter use_cam_timestamp";}
 
     setROI(rect_left_, rect_top_, rect_width_, rect_height_);
     try {
