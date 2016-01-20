@@ -1,17 +1,22 @@
 <launch>
-  <node pkg="nodelet" type="nodelet" name="ximea_nodelet_manager" args="manager" output="screen"/>
+  <arg name="manager_name" default="ximea_nodelet_manager" />
+  <arg name="camera" default="cam0" />
+  <arg name="settings" default="$(find ximea_camera)/config/ximea_mq022.yaml"/>
 
-  <arg name="camera" default="camera" />
 
-  <node pkg="nodelet" type="nodelet" name="ximea_nodelet" args="load ximea_camera/ximea_nodelet ximea_nodelet_manager _settings_yaml:=/tmp/flobi-minimal-rsb-nightly/share/ximea_camera/config/ximea_mq022.yaml">
-  </node>                 
-
-  <!-- Debayer and publish monochrome and color topics -->
-  <node pkg="nodelet" type="nodelet" name="debayer" args="load image_proc/debayer ximea_nodelet_manager">
-    <remap from="image_raw" to="/camera/image_raw" />
-    <remap from="image_color" to="/camera/image_color" />
+  <group ns="$(arg camera)">
+  <!-- nodelet manager -->
+  <node pkg="nodelet" type="nodelet" name="$(arg manager_name)" args="manager" output="screen">
   </node>
 
+  <!-- camera driver -->
+  <node pkg="nodelet" type="nodelet" name="ximea_nodelet" args="load ximea_camera/ximea_nodelet ximea_nodelet_manager _settings_yaml:=$(arg settings)">
+  </node>
+
+    <!-- Debayer and publish monochrome and color topics -->
+    <node pkg="nodelet" type="nodelet" name="debayer" args="load image_proc/debayer ximea_nodelet_manager">
+    </node>
+  </group>
 
 </launch>
 
