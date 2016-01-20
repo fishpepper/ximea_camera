@@ -142,6 +142,9 @@ void ximea_driver::sync_camera_timestamp() {
     // assuming that the setParamInt call is fast enough
     // we should get a good estimate for the difference between
     // the system time and the camera timestamp
+    //
+    // FIXME: this should be done regularly -> find a goot time/place to call this
+    //        every second or so...
 
     // store local time
     camera_to_localtime_offset_ = boost::posix_time::microsec_clock::local_time();
