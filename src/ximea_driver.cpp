@@ -14,6 +14,7 @@ All rights reserved.
 ********************************************************************************/
 
 #include <ximea_camera/ximea_driver.h>
+#include <exception>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -58,11 +59,17 @@ ximea_driver::ximea_driver(std::string file_name) {
 }
 
 bool ximea_driver::errorHandling(XI_RETURN ret, std::string command,
-                                        std::string param, float val) {
+                                 std::string param, float val) {
     if (ret != XI_OK) {
         std::cout << "ximea_driver: " << command << "(" << param << ", "<< val
                   << " ) failed (errno " << ret << ", handle=" << xiH_ << ")\n";
-        closeDevice();
+        // handle error cases:
+        if (ret == XI_INVALID_ARG) {
+            throw std::invalid_argument("xiAPI: invalid parameter");
+        } else {
+            closeDevice();
+            exit(EXIT_FAILURE);
+        }
         return false;
     } else {
         return true;
@@ -367,18 +374,18 @@ void ximea_driver::enableTrigger(unsigned char trigger_mode) {
 
     XI_RETURN stat;
     switch (trigger_mode_) {
-        case (0):
-            break;
+    case (0):
+        break;
 
-        case (1):
-            setParamInt(XI_PRM_TRG_SOURCE, XI_TRG_SOFTWARE);
-            break;
+    case (1):
+        setParamInt(XI_PRM_TRG_SOURCE, XI_TRG_SOFTWARE);
+        break;
 
-        case (2):
-            break;
+    case (2):
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
 }
 
@@ -387,19 +394,19 @@ void ximea_driver::triggerDevice() {
     XI_RETURN stat;
 
     switch (trigger_mode_) {
-        case (0):
-            break;
+    case (0):
+        break;
 
-        case (1):
-            setParamInt(XI_PRM_TRG_SOFTWARE, 1);
-            std::cout << "triggering " << cam_name_ <<  std::endl;
-            break;
+    case (1):
+        setParamInt(XI_PRM_TRG_SOFTWARE, 1);
+        std::cout << "triggering " << cam_name_ <<  std::endl;
+        break;
 
-        case (2):
-            break;
+    case (2):
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
 }
 
@@ -422,7 +429,15 @@ bool ximea_driver::setParamInt(const char *param, int var, bool global) {
     // global or device handle?
     HANDLE handle = (global)?0:xiH_;
     XI_RETURN stat = xiSetParamInt(handle, param, var);
-    return errorHandling(stat, "xiSetParamInt", param, var);
+    bool result = errorHandling(stat, "xiSetParamInt", param, var);
+
+    // read back non global values to make sure we really suceeded
+    // and keep our data consistent:
+    if ((result) && (!global)) {
+        int_param_map[param] = getParamInt(param, global);
+    }
+
+    return result;
 }
 
 int ximea_driver::getParamInt(const char *param, bool global) {
@@ -431,6 +446,12 @@ int ximea_driver::getParamInt(const char *param, bool global) {
     HANDLE handle = (global)?0:xiH_;
     XI_RETURN stat = xiGetParamInt(handle, param, &var);
     errorHandling(stat, "xiGetParamInt", param);
+
+    // store non global values in order to keep our data consistent:
+    if (!global) {
+        int_param_map[param] = var;
+    }
+
     return var;
 }
 
@@ -438,7 +459,15 @@ bool ximea_driver::setParamFloat(const char *param, float var, bool global) {
     // global or device handle?
     HANDLE handle = (global)?0:xiH_;
     XI_RETURN stat = xiSetParamFloat(handle, param, var);
-    return errorHandling(stat, "setParamFloat", param, var);
+    bool result = errorHandling(stat, "setParamFloat", param, var);
+
+    // read back non global values to make sure we really suceeded
+    // and keep our data consistent:
+    if ((result) && (!global)) {
+        float_param_map[param] = getParamFloat(param, global);
+    }
+
+    return result;
 }
 
 float ximea_driver::getParamFloat(const char *param, bool global) {
@@ -447,6 +476,12 @@ float ximea_driver::getParamFloat(const char *param, bool global) {
     HANDLE handle = (global)?0:xiH_;
     XI_RETURN stat = xiGetParamFloat(handle, param, &var);
     errorHandling(stat, "xiGetParamFloat", param);
+
+    // store non global values in order to keep our data consistent:
+    if (!global) {
+        float_param_map[param] = var;
+    }
+
     return var;
 }
 

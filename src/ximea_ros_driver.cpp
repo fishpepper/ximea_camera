@@ -119,25 +119,27 @@ void ximea_ros_driver::setImageDataFormat(std::string image_format) {
 }
 
 bool ximea_ros_driver::dynamic_reconfigure_int(const char *param, int value) {
-    XI_RETURN result;
-    result = xiSetParamInt(xiH_, param, value);
-    if (result != XI_OK) {
-        ROS_ERROR_STREAM("ximea_ros_driver: failed to set parameter " << param << " to " << value);
-        return false;
-    } else {
-        return true;
+    if (int_param_map.find(param) != int_param_map.end()) {
+        if (int_param_map[param] == value) {
+            // entry found & value matches -> no update necessary
+            return true;
+        }
     }
+
+    // else: we have to update the camera data:
+    return setParamInt(param, value);
 }
 
 bool ximea_ros_driver::dynamic_reconfigure_float(const char *param, float value) {
-    XI_RETURN result;
-    result = xiSetParamFloat(xiH_, param, value);
-    if (result != XI_OK) {
-        ROS_ERROR_STREAM("ximea_ros_driver: failed to set parameter " << param << " to " << value);
-        return false;
-    } else {
-        return true;
+    if (float_param_map.find(param) != float_param_map.end()) {
+        if (float_param_map[param] == value) {
+            // entry found & value matches -> no update necessary
+            return true;
+        }
     }
+
+    // else: we have to update the camera data:
+    return setParamFloat(param, value);
 }
 
 void ximea_ros_driver::dynamic_reconfigure_callback(ximea_camera::xiAPIConfig &config,
@@ -146,10 +148,6 @@ void ximea_ros_driver::dynamic_reconfigure_callback(ximea_camera::xiAPIConfig &c
     if (!hasValidHandle()) {
         return;
     }
-
-    // set all paramaters
-    dynamic_reconfigure_float(XI_PRM_EXPOSURE, config.exposure);
-    dynamic_reconfigure_float(XI_PRM_GAIN, config.gain);
 
     // use some tricks to iterate through all config entries:
     std::vector<ximea_camera::xiAPIConfig::AbstractParamDescriptionConstPtr>::const_iterator _i;
@@ -162,7 +160,7 @@ void ximea_ros_driver::dynamic_reconfigure_callback(ximea_camera::xiAPIConfig &c
         // fetch actual value:
         description->getValue(config, val);
 
-        // std::cout << description->name << " " << description->type << "\n";
+        //  std::cout << description->name << " " << description->type << "\n";
 
         // copy data to ximea api:
         if (description->type == "double") {
