@@ -24,18 +24,21 @@ ximea_nodelet::~ximea_nodelet() {
         deviceThread_->join();
         NODELET_INFO("driver thread stopped");
     }
-    drv_->stopAcquisition();
-    drv_->closeDevice();
+    if (drv_->hasValidHandle()) {
+        drv_->stopAcquisition();
+        drv_->closeDevice();
+    }
 }
 
 void ximea_nodelet::onInit() {
+    std::string camera_name;
+    std::string config_filename;
+
     NODELET_INFO("ximea_nodelet::onInit()\n");
 
     ros::NodeHandle priv_nh(getPrivateNodeHandle());
     ros::NodeHandle node(getNodeHandle());
-    ros::NodeHandle camera_nh(node, "camera");
 
-    std::string config_filename;
     if (!priv_nh.getParam("settings_yaml", config_filename)) {
         NODELET_ERROR("failed to load camera settings. please pass config yaml "
                       "as parameter 'settings_yaml' "
@@ -43,8 +46,9 @@ void ximea_nodelet::onInit() {
         exit(EXIT_FAILURE);
     }
 
+
     // create driver
-    drv_.reset(new ximea_ros_driver(camera_nh, config_filename));
+    drv_.reset(new ximea_ros_driver(node, config_filename));
 
     // open device
     drv_->openDevice();

@@ -42,7 +42,9 @@ void ximea_ros_driver::common_initialize(const ros::NodeHandle &nh) {
     // connect to dynamic reconf server
     std::cout << "connecting to dynamic reconfiguration server\n";
 
-    server = new dynamic_reconfigure::Server<ximea_camera::xiAPIConfig>(pnh_);
+    // dynamic reconfig
+    ros::NodeHandle reconf_node(pnh_, "settings");
+    server = new dynamic_reconfigure::Server<ximea_camera::xiAPIConfig>(reconf_node);
     server->setCallback(boost::bind(&ximea_ros_driver::dynamic_reconfigure_callback,
                                     this, _1, _2));
 }
