@@ -32,8 +32,6 @@ All rights reserved.
 #include <map>
 #include <string>
 
-#include "ximea_camera/ximea_param.h"
-
 class ximea_driver{
  public:
     // if no serial no is specified select the first cam on the bus
@@ -92,9 +90,13 @@ class ximea_driver{
     typedef std::map<std::string, int> int_param_map_t;
     int_param_map_t int_param_map;
 
+    bool use_cam_timestamp_;
+    boost::posix_time::ptime camera_to_localtime_offset_;
+
  private:
     void assignDefaultValues();
     void fetchLimits();
+    void sync_camera_timestamp();
 
     // variables for ximea api internals
     int serial_no_;
