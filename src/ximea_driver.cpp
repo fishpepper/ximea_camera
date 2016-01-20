@@ -26,12 +26,13 @@ All rights reserved.
 ximea_driver::ximea_driver(int serial_no, std::string cam_name) {
     serial_no_ = serial_no;
     cam_name_ = cam_name;
-    cam_resolution_w = 0;
-    cam_resolution_h = 0;
     assignDefaultValues();
 }
 
 void ximea_driver::assignDefaultValues() {
+    cam_resolution_w_ = 0;
+    cam_resolution_h_ = 0;
+    bayer_filter_array_ = XI_CFA_NONE;
     allocated_bandwidth_ = 1.0;
     cams_on_bus_ = 4;
     bandwidth_safety_margin_ = 30;
@@ -42,8 +43,8 @@ void ximea_driver::assignDefaultValues() {
     image_data_format_ = "XI_MONO8";
     rect_left_ = 0;
     rect_top_ = 0;
-    rect_width_ = cam_resolution_w;
-    rect_height_ = cam_resolution_h;
+    rect_width_ = cam_resolution_w_;
+    rect_height_ = cam_resolution_h_;
     xiH_ = NULL;
     // pre init all XI_IMG fields to zero:
     memset(&image_, 0, sizeof(XI_IMG));
@@ -82,11 +83,15 @@ bool ximea_driver::errorHandling(XI_RETURN ret, std::string command,
     }
 }
 
-void ximea_driver::fetchLimits() {
+void ximea_driver::fetchValues() {
     // fetch frame size from cam:
-    cam_resolution_w = getParamInt(XI_PRM_WIDTH XI_PRM_INFO_MAX);
-    cam_resolution_h = getParamInt(XI_PRM_HEIGHT XI_PRM_INFO_MAX);
+    cam_resolution_w_ = getParamInt(XI_PRM_WIDTH XI_PRM_INFO_MAX);
+    cam_resolution_h_ = getParamInt(XI_PRM_HEIGHT XI_PRM_INFO_MAX);
+
+    // fetch bayer pattern from cam:
+    bayer_filter_array_ = getParamInt(XI_PRM_COLOR_FILTER_ARRAY);
 }
+
 
 void ximea_driver::applyParameters() {
     setImageDataFormat(image_data_format_);
@@ -129,7 +134,7 @@ void ximea_driver::openDevice() {
     // see allocated_bandwidth parameter in config file
     limitBandwidth(allocated_bandwidth_);
 
-    fetchLimits();
+    fetchValues();
 
     applyParameters();
 
@@ -233,6 +238,7 @@ void ximea_driver::setImageDataFormat(std::string image_format) {
         image_data_format = XI_MONO8;
     }
 
+    std::cout << "xiApi: setting image format to " << image_data_format << std::endl;
     setParamInt(XI_PRM_IMAGE_DATA_FORMAT, image_data_format);
 
     image_data_format_ = image_data_format;
@@ -245,36 +251,36 @@ void ximea_driver::setROI(int l, int t, int w, int h) {
         return;
     }
 
-    if (l < 0 || l > cam_resolution_w) {
+    if (l < 0 || l > cam_resolution_w_) {
         rect_left_ = 0;
     } else {
         rect_left_ = l;
     }
-    if (t < 0 || t > cam_resolution_h) {
+    if (t < 0 || t > cam_resolution_h_) {
         rect_top_ = 0;
     } else {
         rect_top_ = t;
     }
 
-    if (w < 0 || w > cam_resolution_w) {
-        rect_width_ = cam_resolution_w;
+    if (w < 0 || w > cam_resolution_w_) {
+        rect_width_ = cam_resolution_w_;
     } else {
         rect_width_ = w;
     }
 
-    if (h < 0 || h > cam_resolution_h) {
-        rect_height_ = cam_resolution_h;
+    if (h < 0 || h > cam_resolution_h_) {
+        rect_height_ = cam_resolution_h_;
     } else {
         rect_height_ = h;
     }
 
-    if (l + w > cam_resolution_w) {
+    if (l + w > cam_resolution_w_) {
         rect_left_ =  0;
-        rect_width_ = cam_resolution_w;
+        rect_width_ = cam_resolution_w_;
     }
-    if (h + t > cam_resolution_h) {
+    if (h + t > cam_resolution_h_) {
         rect_top_ =  0;
-        rect_height_ = cam_resolution_h;
+        rect_height_ = cam_resolution_h_;
     }
 
     std::cout << "will set roi to: " << rect_width_ << "x" << rect_height_
@@ -310,7 +316,7 @@ void ximea_driver::setExposure(int time) {
 int ximea_driver::readParamsFromFile(std::string file_name) {
     std::ifstream fin(file_name.c_str());
     if (fin.fail()) {
-        ROS_ERROR_STREAM("could not open file " << file_name.c_str() << std::endl);
+        ROS_ERROR_STREAM("could not open file '" << file_name.c_str() << "'" << std::endl);
         exit(-1);
     }
 

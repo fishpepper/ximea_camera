@@ -93,9 +93,11 @@ class ximea_driver{
     bool use_cam_timestamp_;
     boost::posix_time::ptime camera_to_localtime_offset_;
 
+    int bayer_filter_array_;
+
  private:
     void assignDefaultValues();
-    void fetchLimits();
+    void fetchValues();
     void sync_camera_timestamp();
 
     // variables for ximea api internals
@@ -113,8 +115,8 @@ class ximea_driver{
     int rect_top_;
     int rect_width_;
     int rect_height_;
-    int cam_resolution_h;
-    int cam_resolution_w;
+    int cam_resolution_h_;
+    int cam_resolution_w_;
     bool acquisition_active_;
     int image_capture_timeout_;  // max amount of time to wait for an image to come in
     unsigned char trigger_mode_;
