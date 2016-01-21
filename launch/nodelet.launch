@@ -5,17 +5,31 @@
 
 
   <group ns="$(arg camera)">
-  <!-- nodelet manager -->
-  <node pkg="nodelet" type="nodelet" name="$(arg manager_name)" args="manager" output="screen">
-  </node>
 
-  <!-- camera driver -->
-  <node pkg="nodelet" type="nodelet" name="ximea_nodelet" args="load ximea_camera/ros_nodelet ximea_nodelet_manager _settings_yaml:=$(arg settings)">
-  </node>
+    <!-- nodelet manager -->
+    <node pkg="nodelet" type="nodelet" name="$(arg manager_name)" args="manager" output="screen">
+    </node>
+
+    <!-- camera driver -->
+    <node pkg="nodelet" type="nodelet" name="ximea_nodelet" args="load ximea_camera/ros_nodelet ximea_nodelet_manager">
+    <param name="settings_yaml" type="string" value="$(arg settings)" />
+    </node>
 
     <!-- Debayer and publish monochrome and color topics -->
     <node pkg="nodelet" type="nodelet" name="debayer" args="load image_proc/debayer ximea_nodelet_manager">
     </node>
+
+    <!-- Crop and decimate -->
+    <node pkg="nodelet" type="nodelet" name="crop_decimate" args="load image_proc/crop_decimate ximea_nodelet_manager">
+      <!-- remap input topics -->
+      <remap from="camera/image_raw" to="image_color"/>
+      <remap from="camera/image_info" to="camera_info"/>
+      <!-- remap output topics -->
+      <remap from="camera_out/image_raw" to="image_color_subsampled"/>
+      <remap from="camera_out/image_info" to="camera_info_subsampled"/>
+    </node>
+
+
   </group>
 
 </launch>

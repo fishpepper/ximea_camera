@@ -50,27 +50,13 @@ void ros_driver::common_initialize(const ros::NodeHandle &nh) {
                                     this, _1, _2));
 }
 
-void ros_driver::publishImage(const ros::Time & now) {
+void ros_driver::publishImage(const ros::Time & ts) {
     // cast xiapi buffer to cam buffer
     cam_buffer_ = reinterpret_cast<char *>(image_.bp);
     cam_buffer_size_ = image_.width * image_.height * bpp_;
 
-    // set timestamp:
-    ros::Time timestamp;
-    if (use_cam_timestamp_) {
-        // use camera timestamp
-        // camera timestamp was reset during ximea_driver::sync_camera_timestamp() call
-        // and the offset to the local time was stored. in order to calc
-        // the actual timestamp we have to add those two values:
-        timestamp = ros::Time::fromBoost(camera_to_localtime_offset_)
-                + ros::Duration(image_.tsSec, image_.tsUSec*1000L);
-    } else {
-        // use incoming time from ros::Time::now() call
-        timestamp = now;
-    }
-
     // store value in ros msg
-    ros_image_.header.stamp = timestamp;
+    ros_image_.header.stamp = ts;
 
     // setup image parameters
     ros_image_.data.resize(cam_buffer_size_);
@@ -88,16 +74,34 @@ void ros_driver::publishImage(const ros::Time & now) {
     ros_cam_pub_.publish(ros_image_);
 }
 
-void ros_driver::publishCamInfo(const ros::Time &now) {
-    cam_info_.header.stamp = now;
+void ros_driver::publishCamInfo(const ros::Time &ts) {
     cam_info_ = cam_info_manager_->getCameraInfo();
+    cam_info_.header.stamp = ts;
     cam_info_pub_.publish(cam_info_);
 }
 
+ros::Time ros_driver::getTimestamp(){
+    // set timestamp:
+    ros::Time timestamp;
+    if (use_cam_timestamp_) {
+        // use camera timestamp
+        // camera timestamp was reset during ximea_driver::sync_camera_timestamp() call
+        // and the offset to the local time was stored. in order to calc
+        // the actual timestamp we have to add those two values:
+        timestamp = ros::Time::fromBoost(camera_to_localtime_offset_)
+                + ros::Duration(image_.tsSec, image_.tsUSec*1000L);
+    } else {
+        // use Time::now()
+        timestamp = ros::Time::now();
+    }
+    return timestamp;
+}
+
 void ros_driver::publishImageAndCamInfo() {
-    ros::Time now = ros::Time::now();
-    publishImage(now);
-    publishCamInfo(now);
+    ros::Time timestamp = getTimestamp();
+
+    publishImage(timestamp);
+    publishCamInfo(timestamp);
 }
 
 

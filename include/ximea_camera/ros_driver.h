@@ -50,6 +50,8 @@ class ros_driver : public driver {
     bool dynamic_reconfigure_float(const char *param, float value);
     bool dynamic_reconfigure_int(const char *param, int value);
 
+    ros::Time getTimestamp();
+
     ros::NodeHandle pnh_;
     camera_info_manager::CameraInfoManager *cam_info_manager_;
     image_transport::ImageTransport *it_;
