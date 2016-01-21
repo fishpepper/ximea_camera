@@ -20,18 +20,18 @@ All rights reserved.
 #include <string>
 #include <vector>
 
-using ximea_camera::ros_driver;
+using ximea_camera::RosDriver;
 
-ros_driver::ros_driver(const ros::NodeHandle &nh, std::string cam_name, int serial_no,
-                                   std::string yaml_url) : driver(serial_no, cam_name) {
+RosDriver::RosDriver(const ros::NodeHandle &nh, std::string cam_name, int serial_no,
+                                   std::string yaml_url) : Driver(serial_no, cam_name) {
     commonInitialize(nh);
 }
 
-ros_driver::ros_driver(const ros::NodeHandle &nh, std::string file_name) : driver(file_name) {
+RosDriver::RosDriver(const ros::NodeHandle &nh, std::string file_name) : Driver(file_name) {
     commonInitialize(nh);
 }
 
-void ros_driver::commonInitialize(const ros::NodeHandle &nh) {
+void RosDriver::commonInitialize(const ros::NodeHandle &nh) {
     pnh_ = nh;
     cam_info_manager_ = new camera_info_manager::CameraInfoManager(pnh_, cam_name_);
     cam_info_manager_->loadCameraInfo(yaml_url_);
@@ -41,19 +41,18 @@ void ros_driver::commonInitialize(const ros::NodeHandle &nh) {
     cam_info_pub_ = pnh_.advertise<sensor_msgs::CameraInfo>(std::string("camera_info"), 1);
 }
 
-void ros_driver::attachToDynamicReconfigureServer() {
+void RosDriver::attachToDynamicReconfigureServer() {
     // attach to dynamic reconfigure server
     // IMPORTANT: do this after the cam is set up in order
     // to set the default values (or the values passed by the launch file params)
     // immediately
-    std::cout << "connecting to dynamic reconfiguration server\n";
+    ROS_INFO("connecting to dynamic reconfiguration server");
     ros::NodeHandle reconf_node(pnh_, "settings");
-    server = new dynamic_reconfigure::Server<ximea_camera::xiAPIConfig>(reconf_node);
-    server->setCallback(boost::bind(&ros_driver::dynamicReconfigureCallback,
-                                    this, _1, _2));
+    reconf_server_ = new dynamic_reconfigure::Server<ximea_camera::xiAPIConfig>(reconf_node);
+    reconf_server_->setCallback(boost::bind(&RosDriver::dynamicReconfigureCallback, this, _1, _2));
 }
 
-void ros_driver::publishImage(const ros::Time & ts) {
+void RosDriver::publishImage(const ros::Time & ts) {
     // cast xiapi buffer to cam buffer
     cam_buffer_ = reinterpret_cast<char *>(image_.bp);
     cam_buffer_size_ = image_.width * image_.height * bpp_;
@@ -77,13 +76,13 @@ void ros_driver::publishImage(const ros::Time & ts) {
     ros_cam_pub_.publish(ros_image_);
 }
 
-void ros_driver::publishCamInfo(const ros::Time &ts) {
+void RosDriver::publishCamInfo(const ros::Time &ts) {
     cam_info_ = cam_info_manager_->getCameraInfo();
     cam_info_.header.stamp = ts;
     cam_info_pub_.publish(cam_info_);
 }
 
-ros::Time ros_driver::getTimestamp() {
+ros::Time RosDriver::getTimestamp() {
     // set timestamp:
     ros::Time timestamp;
     if (use_cam_timestamp_) {
@@ -100,7 +99,7 @@ ros::Time ros_driver::getTimestamp() {
     return timestamp;
 }
 
-void ros_driver::publishImageAndCamInfo() {
+void RosDriver::publishImageAndCamInfo() {
     ros::Time timestamp = getTimestamp();
 
     publishImage(timestamp);
@@ -108,7 +107,7 @@ void ros_driver::publishImageAndCamInfo() {
 }
 
 
-void ros_driver::setImageDataFormat(std::string image_format) {
+void RosDriver::setImageDataFormat(std::string image_format) {
     XI_RETURN stat;
     int image_data_format;
 
@@ -205,12 +204,12 @@ void ros_driver::setImageDataFormat(std::string image_format) {
     image_data_format_ = image_data_format;
 }
 
-void ros_driver::applyParameters() {
+void RosDriver::applyParameters() {
     attachToDynamicReconfigureServer();
     setImageDataFormat(image_data_format_);
 }
 
-bool ros_driver::dynamicReconfigureInt(const char *param, int value) {
+bool RosDriver::dynamicReconfigureInt(const char *param, int value) {
     if (int_param_map.find(param) != int_param_map.end()) {
         if (int_param_map[param] == value) {
             // entry found & value matches -> no update necessary
@@ -222,7 +221,7 @@ bool ros_driver::dynamicReconfigureInt(const char *param, int value) {
     return setParamInt(param, value);
 }
 
-bool ros_driver::dynamicReconfigureFloat(const char *param, float value) {
+bool RosDriver::dynamicReconfigureFloat(const char *param, float value) {
     if (float_param_map.find(param) != float_param_map.end()) {
         if (float_param_map[param] == value) {
             // entry found & value matches -> no update necessary
@@ -234,7 +233,7 @@ bool ros_driver::dynamicReconfigureFloat(const char *param, float value) {
     return setParamFloat(param, value);
 }
 
-void ros_driver::dynamicReconfigureCallback(const ximea_camera::xiAPIConfig &config,
+void RosDriver::dynamicReconfigureCallback(const ximea_camera::xiAPIConfig &config,
                                                     uint32_t level) {
     // ignore incoming requests as long cam is not set up properly
     if (!hasValidHandle()) {
