@@ -141,13 +141,13 @@ include_directories(
 link_directories(${XIMEA_LIBRARY_PATH})
 
 ## main node executable
-add_executable(ximea_camera_node src/ximea_driver.cpp src/ximea_ros_driver.cpp src/ximea_ros_cluster.cpp src/ximea.cpp )
+add_executable(ximea_camera_node  src/ros_node.cpp src/driver.cpp src/ros_driver.cpp src/ros_cluster.cpp )
 
 ## nodelet library
-add_library(ximea_nodelet src/ximea_nodelet.cpp src/ximea_driver.cpp src/ximea_ros_driver.cpp )
+add_library(ximea_camera_nodelet src/ros_nodelet.cpp src/driver.cpp src/ros_driver.cpp )
 
 ## helper to create cfg by dumping camera min/max values
-add_executable(ximea_generate_cfg src/ximea_generate_cfg.cpp)
+add_executable(ximea_camera_generate_cfg src/generate_cfg.cpp)
 
 
 ## Add cmake target dependencies of the executable/library
@@ -156,7 +156,7 @@ add_executable(ximea_generate_cfg src/ximea_generate_cfg.cpp)
 
 # make sure configure headers are built before any node using them
 add_dependencies(ximea_camera_node ${PROJECT_NAME}_gencfg)
-add_dependencies(ximea_nodelet ${PROJECT_NAME}_gencfg)
+add_dependencies(ximea_camera_nodelet ${PROJECT_NAME}_gencfg)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(ximea_camera_node
@@ -166,14 +166,14 @@ target_link_libraries(ximea_camera_node
   ${Boost_LIBRARIES}
 )
 
-target_link_libraries(ximea_nodelet
+target_link_libraries(ximea_camera_nodelet
   ${XIMEA_LIBRARY}
   ${catkin_LIBRARIES}
   yaml-cpp
   ${Boost_LIBRARIES}
 )
 
-target_link_libraries(ximea_generate_cfg
+target_link_libraries(ximea_camera_generate_cfg
   ${XIMEA_LIBRARY}
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
@@ -216,7 +216,7 @@ install(TARGETS ximea_camera_node
 )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS ximea_nodelet
+install(TARGETS ximea_camera_nodelet
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

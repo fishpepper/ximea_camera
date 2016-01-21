@@ -14,23 +14,24 @@ All rights reserved.
 ********************************************************************************/
 
 #include <sensor_msgs/image_encodings.h>
-#include <ximea_camera/ximea_ros_driver.h>
+#include <ximea_camera/ros_driver.h>
 
 #include <algorithm>
 #include <string>
 #include <vector>
 
-ximea_ros_driver::ximea_ros_driver(const ros::NodeHandle &nh, std::string cam_name, int serial_no,
-                                   std::string yaml_url) : ximea_driver(serial_no, cam_name) {
+using ximea_camera::ros_driver;
+
+ros_driver::ros_driver(const ros::NodeHandle &nh, std::string cam_name, int serial_no,
+                                   std::string yaml_url) : driver(serial_no, cam_name) {
     common_initialize(nh);
 }
 
-ximea_ros_driver::ximea_ros_driver(const ros::NodeHandle &nh, std::string file_name)
-    : ximea_driver(file_name) {
+ros_driver::ros_driver(const ros::NodeHandle &nh, std::string file_name) : driver(file_name) {
     common_initialize(nh);
 }
 
-void ximea_ros_driver::common_initialize(const ros::NodeHandle &nh) {
+void ros_driver::common_initialize(const ros::NodeHandle &nh) {
     pnh_ = nh;
     cam_info_manager_ = new camera_info_manager::CameraInfoManager(pnh_, cam_name_);
     cam_info_manager_->loadCameraInfo(yaml_url_);
@@ -45,11 +46,11 @@ void ximea_ros_driver::common_initialize(const ros::NodeHandle &nh) {
     // dynamic reconfig
     ros::NodeHandle reconf_node(pnh_, "settings");
     server = new dynamic_reconfigure::Server<ximea_camera::xiAPIConfig>(reconf_node);
-    server->setCallback(boost::bind(&ximea_ros_driver::dynamic_reconfigure_callback,
+    server->setCallback(boost::bind(&ros_driver::dynamic_reconfigure_callback,
                                     this, _1, _2));
 }
 
-void ximea_ros_driver::publishImage(const ros::Time & now) {
+void ros_driver::publishImage(const ros::Time & now) {
     // cast xiapi buffer to cam buffer
     cam_buffer_ = reinterpret_cast<char *>(image_.bp);
     cam_buffer_size_ = image_.width * image_.height * bpp_;
@@ -87,20 +88,20 @@ void ximea_ros_driver::publishImage(const ros::Time & now) {
     ros_cam_pub_.publish(ros_image_);
 }
 
-void ximea_ros_driver::publishCamInfo(const ros::Time &now) {
+void ros_driver::publishCamInfo(const ros::Time &now) {
     cam_info_.header.stamp = now;
     cam_info_ = cam_info_manager_->getCameraInfo();
     cam_info_pub_.publish(cam_info_);
 }
 
-void ximea_ros_driver::publishImageAndCamInfo() {
+void ros_driver::publishImageAndCamInfo() {
     ros::Time now = ros::Time::now();
     publishImage(now);
     publishCamInfo(now);
 }
 
 
-void ximea_ros_driver::setImageDataFormat(std::string image_format) {
+void ros_driver::setImageDataFormat(std::string image_format) {
     XI_RETURN stat;
     int image_data_format;
 
@@ -197,7 +198,7 @@ void ximea_ros_driver::setImageDataFormat(std::string image_format) {
     image_data_format_ = image_data_format;
 }
 
-bool ximea_ros_driver::dynamic_reconfigure_int(const char *param, int value) {
+bool ros_driver::dynamic_reconfigure_int(const char *param, int value) {
     if (int_param_map.find(param) != int_param_map.end()) {
         if (int_param_map[param] == value) {
             // entry found & value matches -> no update necessary
@@ -209,7 +210,7 @@ bool ximea_ros_driver::dynamic_reconfigure_int(const char *param, int value) {
     return setParamInt(param, value);
 }
 
-bool ximea_ros_driver::dynamic_reconfigure_float(const char *param, float value) {
+bool ros_driver::dynamic_reconfigure_float(const char *param, float value) {
     if (float_param_map.find(param) != float_param_map.end()) {
         if (float_param_map[param] == value) {
             // entry found & value matches -> no update necessary
@@ -221,7 +222,7 @@ bool ximea_ros_driver::dynamic_reconfigure_float(const char *param, float value)
     return setParamFloat(param, value);
 }
 
-void ximea_ros_driver::dynamic_reconfigure_callback(const ximea_camera::xiAPIConfig &config,
+void ros_driver::dynamic_reconfigure_callback(const ximea_camera::xiAPIConfig &config,
                                                     uint32_t level) {
     // ignore incoming requests as long cam is not set up properly
     if (!hasValidHandle()) {

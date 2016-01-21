@@ -13,10 +13,16 @@ All rights reserved.
 
 ********************************************************************************/
 
-#include <ximea_camera/ximea_ros_cluster.h>
+#include <ximea_camera/ros_cluster.h>
 #include <string>
 #include <vector>
 
+using ximea_camera::ros_cluster;
+using ximea_camera::ros_driver;
+using ximea_camera::driver;
+
+
+// FIXME: remove this contants
 int serial_nos[3] = { 32300651 ,  33300151 , 32301251};
 std::string cam_names[3] = {std::string("camera1"), std::string("camera2"), std::string("camera3")};
 std::string calib_file_names[3] = {
@@ -38,37 +44,37 @@ std::string getCamNameFromYaml(std::string file_name) {
     return ret;
 }
 
-ximea_ros_cluster::ximea_ros_cluster(int num_cams)
+ros_cluster::ros_cluster(int num_cams)
     : USB_BUS_SAFETY_MARGIN(0), USB3_BANDWIDTH(2400) {
     num_cams_ = num_cams;
     devices_open_ = false;
     for (int i = 0 ; i < num_cams; i ++) {
         ros::NodeHandle nh(std::string("/") + cam_names[i]);
 
-        boost::shared_ptr<ximea_ros_driver> ximea_ros_driver_ptr(
-                    new ximea_ros_driver(nh, cam_names[i], serial_nos[i], calib_file_names[i]));
+        boost::shared_ptr<ros_driver> ros_driver_ptr(
+                    new ros_driver(nh, cam_names[i], serial_nos[i], calib_file_names[i]));
 
-        add_camera(ximea_ros_driver_ptr);
+        add_camera(ros_driver_ptr);
     }
     fixed_init_ = true;
 }
 
-ximea_ros_cluster::ximea_ros_cluster(std::vector<std::string> filenames)
+ros_cluster::ros_cluster(std::vector<std::string> filenames)
     : USB_BUS_SAFETY_MARGIN(0), USB3_BANDWIDTH(2400) {
     devices_open_ = false;
     for (int i = 0 ; i < filenames.size(); i ++) {
         std::string cam_name = getCamNameFromYaml(filenames[i]);
         ros::NodeHandle nh(std::string("/") + cam_name);
 
-        boost::shared_ptr<ximea_ros_driver> ximea_ros_driver_ptr(
-                    new ximea_ros_driver(nh, filenames[i]));
+        boost::shared_ptr<ros_driver> ros_driver_ptr(
+                    new ros_driver(nh, filenames[i]));
 
-        add_camera(ximea_ros_driver_ptr);
+        add_camera(ros_driver_ptr);
     }
     fixed_init_ = false;
 }
 
-void ximea_ros_cluster::add_camera(boost::shared_ptr<ximea_ros_driver> xd) {
+void ros_cluster::add_camera(boost::shared_ptr<ros_driver> xd) {
     if (devices_open_) {
         clusterEnd();
     }
@@ -79,7 +85,7 @@ void ximea_ros_cluster::add_camera(boost::shared_ptr<ximea_ros_driver> xd) {
     ROS_INFO_STREAM("done camera add");
 }
 
-void ximea_ros_cluster::remove_camera(int serial_no) {
+void ros_cluster::remove_camera(int serial_no) {
     if (devices_open_) {
         clusterEnd();
     }
@@ -95,7 +101,7 @@ void ximea_ros_cluster::remove_camera(int serial_no) {
     num_cams_--;
 }
 
-void ximea_ros_cluster::clusterInit() {
+void ros_cluster::clusterInit() {
     for (int i = 0; i < cams_.size(); i++) {
         ROS_INFO_STREAM("opening device " << cams_[i]->getSerialNo());
         cams_[i]->openDevice();
@@ -111,7 +117,7 @@ void ximea_ros_cluster::clusterInit() {
     devices_open_ = true;
 }
 
-void ximea_ros_cluster::clusterEnd() {
+void ros_cluster::clusterEnd() {
     for (int i = 0; i < cams_.size(); i  ++) {
         cams_[i]->stopAcquisition();
         cams_[i]->closeDevice();
@@ -120,9 +126,9 @@ void ximea_ros_cluster::clusterEnd() {
 }
 
 // triggered_acquire
-void ximea_ros_cluster::clusterAcquire() {
+void ros_cluster::clusterAcquire() {
     for (int i = 0; i < cams_.size(); i  ++) {
-        threads_[i] = new boost::thread(&ximea_driver::acquireImage, cams_[i]);
+        threads_[i] = new boost::thread(&driver::acquireImage, cams_[i]);
     }
 
     for (int i = 0; i < cams_.size(); i  ++) {
@@ -131,10 +137,10 @@ void ximea_ros_cluster::clusterAcquire() {
     }
 }
 
-void ximea_ros_cluster::clusterPublishImages() {
+void ros_cluster::clusterPublishImages() {
     // FIXME: might want to think as to how to multithread this
     for (int i = 0; i < cams_.size(); i  ++) {
-        threads_[i] = new boost::thread(&ximea_ros_driver::publishImage,
+        threads_[i] = new boost::thread(&ros_driver::publishImage,
                                         cams_[i], ros::Time::now());
     }
 
@@ -145,17 +151,17 @@ void ximea_ros_cluster::clusterPublishImages() {
 }
 
 
-void ximea_ros_cluster::clusterPublishCamInfo() {
+void ros_cluster::clusterPublishCamInfo() {
     for (int i = 0 ; i < cams_.size(); i ++) {
         cams_[i]->publishCamInfo(ros::Time::now());
     }
 }
 
-void ximea_ros_cluster::clusterPublishImageAndCamInfo() {
+void ros_cluster::clusterPublishImageAndCamInfo() {
     ros::Time curr_time = ros::Time::now();
 
     for (int i = 0; i < cams_.size(); i  ++) {
-        threads_[i] = new boost::thread(&ximea_ros_driver::publishImage, cams_[i], curr_time);
+        threads_[i] = new boost::thread(&ros_driver::publishImage, cams_[i], curr_time);
     }
 
     for (int i = 0; i < cams_.size(); i  ++) {
@@ -168,7 +174,7 @@ void ximea_ros_cluster::clusterPublishImageAndCamInfo() {
     }
 }
 
-int ximea_ros_cluster::getCameraIndex(int serial_no) {
+int ros_cluster::getCameraIndex(int serial_no) {
     for (int i = 0; i < cams_.size(); i++) {
         if (serial_no == cams_[i]->getSerialNo()) {
             return i;
@@ -177,21 +183,21 @@ int ximea_ros_cluster::getCameraIndex(int serial_no) {
     return -1;
 }
 
-void ximea_ros_cluster::setExposure(int serial_no, int time) {
+void ros_cluster::setExposure(int serial_no, int time) {
     int idx;
     if (idx = getCameraIndex(serial_no) != -1) {
         cams_[idx]->setExposure(time);
     }
 }
 
-void ximea_ros_cluster::setImageDataFormat(int serial_no, std::string s) {
+void ros_cluster::setImageDataFormat(int serial_no, std::string s) {
     int idx;
     if (idx = getCameraIndex(serial_no) != -1) {
         cams_[idx]->setImageDataFormat(s);
     }
 }
 
-void ximea_ros_cluster::setROI(int serial_no, int l, int t, int w, int h) {
+void ros_cluster::setROI(int serial_no, int l, int t, int w, int h) {
     int idx;
     if (idx = getCameraIndex(serial_no) != -1) {
         cams_[idx]->setROI(l, t, w, h);

@@ -13,7 +13,7 @@ All rights reserved.
 
 ********************************************************************************/
 
-#include <ximea_camera/ximea_ros_cluster.h>
+#include <ximea_camera/ros_cluster.h>
 #include <string>
 #include <vector>
 
@@ -40,7 +40,7 @@ int main(int argc, char ** argv) {
         }
     }
 
-    ximea_ros_cluster xd(file_names);
+    ximea_camera::ros_cluster xd(file_names);
     xd.clusterInit();
 
     // TODO(myself): need to robustify against replugging and cntrlc

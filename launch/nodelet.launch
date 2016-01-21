@@ -10,7 +10,7 @@
   </node>
 
   <!-- camera driver -->
-  <node pkg="nodelet" type="nodelet" name="ximea_nodelet" args="load ximea_camera/ximea_nodelet ximea_nodelet_manager _settings_yaml:=$(arg settings)">
+  <node pkg="nodelet" type="nodelet" name="ximea_nodelet" args="load ximea_camera/ros_nodelet ximea_nodelet_manager _settings_yaml:=$(arg settings)">
   </node>
 
     <!-- Debayer and publish monochrome and color topics -->
