@@ -16,6 +16,8 @@
       <param name="aeag" type="bool" value="1" />
       <param name="width" type="int" value="2040" />
       <param name="height" type="int" value="1020" />
+      <param name="acq_timing_mode" type="int" value="1" />
+      <param name="framerate" type="float" value="30.0" />
     </node>
 
     <!-- Debayer and publish monochrome and color topics -->
