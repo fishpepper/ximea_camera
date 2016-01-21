@@ -21,7 +21,6 @@ using ximea_camera::RosCluster;
 using ximea_camera::RosDriver;
 using ximea_camera::Driver;
 
-
 std::string getCamNameFromYaml(std::string file_name) {
     std::ifstream fin(file_name.c_str());
     if (fin.fail()) {
