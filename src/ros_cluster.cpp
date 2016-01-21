@@ -44,11 +44,11 @@ ros_cluster::ros_cluster(std::vector<std::string> filenames) {
         boost::shared_ptr<ros_driver> ros_driver_ptr(
                     new ros_driver(nh, filenames[i]));
 
-        add_camera(ros_driver_ptr);
+        addCamera(ros_driver_ptr);
     }
 }
 
-void ros_cluster::add_camera(boost::shared_ptr<ros_driver> xd) {
+void ros_cluster::addCamera(boost::shared_ptr<ros_driver> xd) {
     if (devices_open_) {
         clusterEnd();
     }
@@ -59,7 +59,7 @@ void ros_cluster::add_camera(boost::shared_ptr<ros_driver> xd) {
     ROS_INFO_STREAM("done camera add");
 }
 
-void ros_cluster::remove_camera(int serial_no) {
+void ros_cluster::removeCamera(int serial_no) {
     if (devices_open_) {
         clusterEnd();
     }

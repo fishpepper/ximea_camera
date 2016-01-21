@@ -46,11 +46,11 @@ class ros_driver : public driver {
 
  private:
     void applyParameters();
-    void common_initialize(const ros::NodeHandle &nh);
+    void commonInitialize(const ros::NodeHandle &nh);
     void attachToDynamicReconfigureServer();
-    void dynamic_reconfigure_callback(const ximea_camera::xiAPIConfig &config, uint32_t level);
-    bool dynamic_reconfigure_float(const char *param, float value);
-    bool dynamic_reconfigure_int(const char *param, int value);
+    void dynamicReconfigureCallback(const ximea_camera::xiAPIConfig &config, uint32_t level);
+    bool dynamicReconfigureFloat(const char *param, float value);
+    bool dynamicReconfigureInt(const char *param, int value);
 
     ros::Time getTimestamp();
 

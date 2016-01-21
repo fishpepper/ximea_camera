@@ -24,14 +24,14 @@ using ximea_camera::ros_driver;
 
 ros_driver::ros_driver(const ros::NodeHandle &nh, std::string cam_name, int serial_no,
                                    std::string yaml_url) : driver(serial_no, cam_name) {
-    common_initialize(nh);
+    commonInitialize(nh);
 }
 
 ros_driver::ros_driver(const ros::NodeHandle &nh, std::string file_name) : driver(file_name) {
-    common_initialize(nh);
+    commonInitialize(nh);
 }
 
-void ros_driver::common_initialize(const ros::NodeHandle &nh) {
+void ros_driver::commonInitialize(const ros::NodeHandle &nh) {
     pnh_ = nh;
     cam_info_manager_ = new camera_info_manager::CameraInfoManager(pnh_, cam_name_);
     cam_info_manager_->loadCameraInfo(yaml_url_);
@@ -49,7 +49,7 @@ void ros_driver::attachToDynamicReconfigureServer() {
     std::cout << "connecting to dynamic reconfiguration server\n";
     ros::NodeHandle reconf_node(pnh_, "settings");
     server = new dynamic_reconfigure::Server<ximea_camera::xiAPIConfig>(reconf_node);
-    server->setCallback(boost::bind(&ros_driver::dynamic_reconfigure_callback,
+    server->setCallback(boost::bind(&ros_driver::dynamicReconfigureCallback,
                                     this, _1, _2));
 }
 
@@ -118,19 +118,19 @@ void ros_driver::setImageDataFormat(std::string image_format) {
 
     if (image_format == std::string("XI_MONO16")) {
         image_data_format = XI_MONO16;
-        encoding_ = std::string("mono16");
+        encoding_ = sensor_msgs::image_encodings::MONO16;
         bpp_ = 2;
     } else if (image_format == std::string("XI_RGB24")) {
         image_data_format = XI_RGB24;
-        encoding_ = std::string("bgr8");
+        encoding_ = sensor_msgs::image_encodings::BGR8;
         bpp_ = 3;
     } else if (image_format == std::string("XI_RGB32")) {
         image_data_format = XI_RGB32;
-        encoding_ = std::string("bgr16");
+        encoding_ = sensor_msgs::image_encodings::BGR16;
         bpp_ = 3;
     } else if (image_format == std::string("XI_RGB_PLANAR")) {
         image_data_format = XI_MONO8;
-        std::cout << "This is unsupported in ROS default to XI_MONO8" << std::endl;
+        std::cerr << "This is unsupported in ROS default to XI_MONO8" << std::endl;
         bpp_ = 1;
     } else if (image_format == std::string("XI_RAW8")) {
         image_data_format = XI_RAW8;
@@ -142,7 +142,7 @@ void ros_driver::setImageDataFormat(std::string image_format) {
         case(XI_CFA_CMYG):
         case(XI_CFA_RGR):
             // fallback for invalid/unsupported values
-            encoding_ = std::string("mono8");
+            encoding_ = sensor_msgs::image_encodings::MONO8;
             break;
 
         case(XI_CFA_BAYER_RGGB):
@@ -172,7 +172,7 @@ void ros_driver::setImageDataFormat(std::string image_format) {
         case(XI_CFA_CMYG):
         case(XI_CFA_RGR):
             // fallback for invalid/unsupported values
-            encoding_ = std::string("mono16");
+            encoding_ = sensor_msgs::image_encodings::MONO16;
             break;
 
         case(XI_CFA_BAYER_RGGB):
@@ -194,7 +194,7 @@ void ros_driver::setImageDataFormat(std::string image_format) {
         bpp_ = 2;
     } else {
         image_data_format = XI_MONO8;
-        encoding_ = std::string("mono8");
+        encoding_ = sensor_msgs::image_encodings::MONO8;
         bpp_ = 1;
     }
 
@@ -210,7 +210,7 @@ void ros_driver::applyParameters() {
     setImageDataFormat(image_data_format_);
 }
 
-bool ros_driver::dynamic_reconfigure_int(const char *param, int value) {
+bool ros_driver::dynamicReconfigureInt(const char *param, int value) {
     if (int_param_map.find(param) != int_param_map.end()) {
         if (int_param_map[param] == value) {
             // entry found & value matches -> no update necessary
@@ -222,7 +222,7 @@ bool ros_driver::dynamic_reconfigure_int(const char *param, int value) {
     return setParamInt(param, value);
 }
 
-bool ros_driver::dynamic_reconfigure_float(const char *param, float value) {
+bool ros_driver::dynamicReconfigureFloat(const char *param, float value) {
     if (float_param_map.find(param) != float_param_map.end()) {
         if (float_param_map[param] == value) {
             // entry found & value matches -> no update necessary
@@ -234,7 +234,7 @@ bool ros_driver::dynamic_reconfigure_float(const char *param, float value) {
     return setParamFloat(param, value);
 }
 
-void ros_driver::dynamic_reconfigure_callback(const ximea_camera::xiAPIConfig &config,
+void ros_driver::dynamicReconfigureCallback(const ximea_camera::xiAPIConfig &config,
                                                     uint32_t level) {
     // ignore incoming requests as long cam is not set up properly
     if (!hasValidHandle()) {
@@ -256,12 +256,12 @@ void ros_driver::dynamic_reconfigure_callback(const ximea_camera::xiAPIConfig &c
 
         // copy data to ximea api:
         if (description->type == "double") {
-            dynamic_reconfigure_float(description->name.c_str(),
+            dynamicReconfigureFloat(description->name.c_str(),
                                       static_cast<float>(boost::any_cast<double>(val)));
         } else if (description->type == "bool") {
-            dynamic_reconfigure_int(description->name.c_str(), (boost::any_cast<bool>(val))?1:0);
+            dynamicReconfigureInt(description->name.c_str(), (boost::any_cast<bool>(val))?1:0);
         } else if (description->type == "int") {
-            dynamic_reconfigure_int(description->name.c_str(), boost::any_cast<int>(val));
+            dynamicReconfigureInt(description->name.c_str(), boost::any_cast<int>(val));
         } else {
             std::cerr << "ERROR: unsupported config type " << description->type  << "\n";
         }

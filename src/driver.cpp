@@ -130,10 +130,10 @@ void driver::openDevice() {
 
     applyParameters();
 
-    sync_camera_timestamp();
+    syncCameraTimestamp();
 }
 
-void driver::sync_camera_timestamp() {
+void driver::syncCameraTimestamp() {
     // this will store the current time as a timestamp
     // and trigger a reset of the cameras internal timestamp
     // assuming that the setParamInt call is fast enough
