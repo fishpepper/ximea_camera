@@ -57,20 +57,6 @@ void ros_nodelet::onInit() {
     // start acquisition
     drv_->startAcquisition();
 
-    /*dvr_->
-
-            op  ]->openDevice();
-    if (fixed_init_) {
-        cams_[i]->setImageDataFormat("XI_MONO8");
-        cams_[i]->setROI(200, 200, 900, 600);
-        cams_[i]->setExposure(10000);
-    }
-    // cams_[i]->limitBandwidth((USB3_BANDWIDTH) - USB_BUS_SAFETY_MARGIN);
-    cams_[i]->startAcquisition();
-
-
-    dvr_->setup();
-*/
     // spawn device thread
     running_ = true;
     deviceThread_ = boost::shared_ptr< boost::thread >

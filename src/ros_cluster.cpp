@@ -46,7 +46,6 @@ ros_cluster::ros_cluster(std::vector<std::string> filenames) {
 
         add_camera(ros_driver_ptr);
     }
-    fixed_init_ = false;
 }
 
 void ros_cluster::add_camera(boost::shared_ptr<ros_driver> xd) {
@@ -80,12 +79,6 @@ void ros_cluster::clusterInit() {
     for (int i = 0; i < cams_.size(); i++) {
         ROS_INFO_STREAM("opening device " << cams_[i]->getSerialNo());
         cams_[i]->openDevice();
-        if (fixed_init_) {
-            cams_[i]->setImageDataFormat("XI_MONO8");
-            cams_[i]->setROI(200, 200, 900, 600);
-            cams_[i]->setExposure(10000);
-        }
-        // cams_[i]->limitBandwidth((USB3_BANDWIDTH) - USB_BUS_SAFETY_MARGIN);
         cams_[i]->startAcquisition();
         // FIXME: remove this into constructor
     }
@@ -158,24 +151,10 @@ int ros_cluster::getCameraIndex(int serial_no) {
     return -1;
 }
 
-void ros_cluster::setExposure(int serial_no, int time) {
-    int idx;
-    if (idx = getCameraIndex(serial_no) != -1) {
-        cams_[idx]->setExposure(time);
-    }
-}
-
 void ros_cluster::setImageDataFormat(int serial_no, std::string s) {
     int idx;
     if (idx = getCameraIndex(serial_no) != -1) {
         cams_[idx]->setImageDataFormat(s);
-    }
-}
-
-void ros_cluster::setROI(int serial_no, int l, int t, int w, int h) {
-    int idx;
-    if (idx = getCameraIndex(serial_no) != -1) {
-        cams_[idx]->setROI(l, t, w, h);
     }
 }
 

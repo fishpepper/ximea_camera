@@ -39,11 +39,14 @@ void ros_driver::common_initialize(const ros::NodeHandle &nh) {
     it_ = new image_transport::ImageTransport(nh);
     ros_cam_pub_ = it_->advertise(std::string("image_raw"), 1);
     cam_info_pub_ = pnh_.advertise<sensor_msgs::CameraInfo>(std::string("camera_info"), 1);
+}
 
-    // connect to dynamic reconf server
+void ros_driver::attachToDynamicReconfigureServer() {
+    // attach to dynamic reconfigure server
+    // IMPORTANT: do this after the cam is set up in order
+    // to set the default values (or the values passed by the launch file params)
+    // immediately
     std::cout << "connecting to dynamic reconfiguration server\n";
-
-    // dynamic reconfig
     ros::NodeHandle reconf_node(pnh_, "settings");
     server = new dynamic_reconfigure::Server<ximea_camera::xiAPIConfig>(reconf_node);
     server->setCallback(boost::bind(&ros_driver::dynamic_reconfigure_callback,
@@ -80,7 +83,7 @@ void ros_driver::publishCamInfo(const ros::Time &ts) {
     cam_info_pub_.publish(cam_info_);
 }
 
-ros::Time ros_driver::getTimestamp(){
+ros::Time ros_driver::getTimestamp() {
     // set timestamp:
     ros::Time timestamp;
     if (use_cam_timestamp_) {
@@ -200,6 +203,11 @@ void ros_driver::setImageDataFormat(std::string image_format) {
     // we should probably quit then..
 
     image_data_format_ = image_data_format;
+}
+
+void ros_driver::applyParameters() {
+    attachToDynamicReconfigureServer();
+    setImageDataFormat(image_data_format_);
 }
 
 bool ros_driver::dynamic_reconfigure_int(const char *param, int value) {
