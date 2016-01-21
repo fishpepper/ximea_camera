@@ -17,9 +17,9 @@ All rights reserved.
 #include <string>
 #include <vector>
 
-using ximea_camera::ros_cluster;
-using ximea_camera::ros_driver;
-using ximea_camera::driver;
+using ximea_camera::RosCluster;
+using ximea_camera::RosDriver;
+using ximea_camera::Driver;
 
 
 std::string getCamNameFromYaml(std::string file_name) {
@@ -35,20 +35,20 @@ std::string getCamNameFromYaml(std::string file_name) {
     return ret;
 }
 
-ros_cluster::ros_cluster(std::vector<std::string> filenames) {
+RosCluster::RosCluster(std::vector<std::string> filenames) {
     devices_open_ = false;
     for (int i = 0 ; i < filenames.size(); i ++) {
         std::string cam_name = getCamNameFromYaml(filenames[i]);
         ros::NodeHandle nh(std::string("/") + cam_name);
 
-        boost::shared_ptr<ros_driver> ros_driver_ptr(
-                    new ros_driver(nh, filenames[i]));
+        boost::shared_ptr<RosDriver> RosDriver_ptr(
+                    new RosDriver(nh, filenames[i]));
 
-        addCamera(ros_driver_ptr);
+        addCamera(RosDriver_ptr);
     }
 }
 
-void ros_cluster::addCamera(boost::shared_ptr<ros_driver> xd) {
+void RosCluster::addCamera(boost::shared_ptr<RosDriver> xd) {
     if (devices_open_) {
         clusterEnd();
     }
@@ -59,7 +59,7 @@ void ros_cluster::addCamera(boost::shared_ptr<ros_driver> xd) {
     ROS_INFO_STREAM("done camera add");
 }
 
-void ros_cluster::removeCamera(int serial_no) {
+void RosCluster::removeCamera(int serial_no) {
     if (devices_open_) {
         clusterEnd();
     }
@@ -75,7 +75,7 @@ void ros_cluster::removeCamera(int serial_no) {
     num_cams_--;
 }
 
-void ros_cluster::clusterInit() {
+void RosCluster::clusterInit() {
     for (int i = 0; i < cams_.size(); i++) {
         ROS_INFO_STREAM("opening device " << cams_[i]->getSerialNo());
         cams_[i]->openDevice();
@@ -85,7 +85,7 @@ void ros_cluster::clusterInit() {
     devices_open_ = true;
 }
 
-void ros_cluster::clusterEnd() {
+void RosCluster::clusterEnd() {
     for (int i = 0; i < cams_.size(); i  ++) {
         cams_[i]->stopAcquisition();
         cams_[i]->closeDevice();
@@ -94,9 +94,9 @@ void ros_cluster::clusterEnd() {
 }
 
 // triggered_acquire
-void ros_cluster::clusterAcquire() {
+void RosCluster::clusterAcquire() {
     for (int i = 0; i < cams_.size(); i  ++) {
-        threads_[i] = new boost::thread(&driver::acquireImage, cams_[i]);
+        threads_[i] = new boost::thread(&Driver::acquireImage, cams_[i]);
     }
 
     for (int i = 0; i < cams_.size(); i  ++) {
@@ -105,11 +105,11 @@ void ros_cluster::clusterAcquire() {
     }
 }
 
-void ros_cluster::clusterPublishImages() {
+void RosCluster::clusterPublishImages() {
     // FIXME: might want to think as to how to multithread this
     // FIXME: use cam timestamp if requested
     for (int i = 0; i < cams_.size(); i  ++) {
-        threads_[i] = new boost::thread(&ros_driver::publishImage, cams_[i], ros::Time::now());
+        threads_[i] = new boost::thread(&RosDriver::publishImage, cams_[i], ros::Time::now());
     }
 
     for (int i = 0; i < cams_.size(); i  ++) {
@@ -119,17 +119,17 @@ void ros_cluster::clusterPublishImages() {
 }
 
 
-void ros_cluster::clusterPublishCamInfo() {
+void RosCluster::clusterPublishCamInfo() {
     for (int i = 0 ; i < cams_.size(); i ++) {
         cams_[i]->publishCamInfo(ros::Time::now());
     }
 }
 
-void ros_cluster::clusterPublishImageAndCamInfo() {
+void RosCluster::clusterPublishImageAndCamInfo() {
     ros::Time curr_time = ros::Time::now();
 
     for (int i = 0; i < cams_.size(); i  ++) {
-        threads_[i] = new boost::thread(&ros_driver::publishImage, cams_[i], curr_time);
+        threads_[i] = new boost::thread(&RosDriver::publishImage, cams_[i], curr_time);
     }
 
     for (int i = 0; i < cams_.size(); i  ++) {
@@ -142,7 +142,7 @@ void ros_cluster::clusterPublishImageAndCamInfo() {
     }
 }
 
-int ros_cluster::getCameraIndex(int serial_no) {
+int RosCluster::getCameraIndex(int serial_no) {
     for (int i = 0; i < cams_.size(); i++) {
         if (serial_no == cams_[i]->getSerialNo()) {
             return i;
@@ -151,7 +151,7 @@ int ros_cluster::getCameraIndex(int serial_no) {
     return -1;
 }
 
-void ros_cluster::setImageDataFormat(int serial_no, std::string s) {
+void RosCluster::setImageDataFormat(int serial_no, std::string s) {
     int idx;
     if (idx = getCameraIndex(serial_no) != -1) {
         cams_[idx]->setImageDataFormat(s);

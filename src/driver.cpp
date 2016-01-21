@@ -21,17 +21,18 @@ All rights reserved.
 #include <stdexcept>
 #include <string>
 
-#define driver_DEBUG_LEVEL XI_DL_FATAL    // XI_DL_DETAIL
+#define Driver_DEBUG_LEVEL XI_DL_FATAL
+// #define Driver_DEBUG_LEVEL XI_DL_DETAIL
 
-using ximea_camera::driver;
+using ximea_camera::Driver;
 
-driver::driver(int serial_no, std::string cam_name) {
+Driver::Driver(int serial_no, std::string cam_name) {
     serial_no_ = serial_no;
     cam_name_ = cam_name;
     assignDefaultValues();
 }
 
-void driver::assignDefaultValues() {
+void Driver::assignDefaultValues() {
     cam_resolution_w_ = 0;
     cam_resolution_h_ = 0;
     bayer_filter_array_ = XI_CFA_NONE;
@@ -50,16 +51,16 @@ void driver::assignDefaultValues() {
     camera_to_localtime_offset_ = boost::posix_time::microsec_clock::local_time();
 }
 
-driver::driver(std::string file_name) {
+Driver::Driver(std::string file_name) {
     assignDefaultValues();
     readParamsFromFile(file_name);
-    ROS_INFO_STREAM("driver: reading paramter values from file: " << file_name);
+    ROS_INFO_STREAM("Driver: reading paramter values from file: " << file_name);
 }
 
-bool driver::errorHandling(XI_RETURN ret, std::string command,
+bool Driver::errorHandling(XI_RETURN ret, std::string command,
                                  std::string param, float val) {
     if (ret != XI_OK) {
-        std::cout << "driver: " << command << "(" << param << ", "<< val
+        std::cout << "Driver: " << command << "(" << param << ", "<< val
                   << " ) failed (errno " << ret << ", handle=" << xiH_ << ")\n";
         // handle error cases:
         if (ret == XI_INVALID_ARG) {
@@ -77,7 +78,7 @@ bool driver::errorHandling(XI_RETURN ret, std::string command,
     }
 }
 
-void driver::fetchValues() {
+void Driver::fetchValues() {
     // fetch frame size from cam:
     cam_resolution_w_ = getParamInt(XI_PRM_WIDTH XI_PRM_INFO_MAX);
     cam_resolution_h_ = getParamInt(XI_PRM_HEIGHT XI_PRM_INFO_MAX);
@@ -87,15 +88,15 @@ void driver::fetchValues() {
 }
 
 
-void driver::applyParameters() {
+void Driver::applyParameters() {
     setImageDataFormat(image_data_format_);
 }
 
-void driver::openDevice() {
+void Driver::openDevice() {
     XI_RETURN stat;
 
     // set xiapi debug level:
-    setParamInt(XI_PRM_DEBUG_LEVEL, driver_DEBUG_LEVEL, true);
+    setParamInt(XI_PRM_DEBUG_LEVEL, Driver_DEBUG_LEVEL, true);
 
     // disable auto bandwidth measurements:
     setParamInt(XI_PRM_AUTO_BANDWIDTH_CALCULATION, XI_OFF, true);
@@ -133,7 +134,7 @@ void driver::openDevice() {
     syncCameraTimestamp();
 }
 
-void driver::syncCameraTimestamp() {
+void Driver::syncCameraTimestamp() {
     // this will store the current time as a timestamp
     // and trigger a reset of the cameras internal timestamp
     // assuming that the setParamInt call is fast enough
@@ -150,14 +151,14 @@ void driver::syncCameraTimestamp() {
     setParamInt(XI_PRM_TS_RST_SOURCE, XI_TS_RST_SRC_SW);
 }
 
-void driver::closeDevice() {
+void Driver::closeDevice() {
     if (xiH_) {
         xiCloseDevice(xiH_);
         xiH_ = NULL;
     }
 }
 
-void driver::stopAcquisition() {
+void Driver::stopAcquisition() {
     XI_RETURN stat;
     if (!hasValidHandle()) {
         return;
@@ -169,7 +170,7 @@ void driver::stopAcquisition() {
     acquisition_active_ = false;
 }
 
-void driver::startAcquisition() {
+void Driver::startAcquisition() {
     if (!hasValidHandle()) {
         return;
     }
@@ -179,7 +180,7 @@ void driver::startAcquisition() {
     acquisition_active_ = true;
 }
 
-void driver::acquireImage() {
+void Driver::acquireImage() {
     XI_RETURN stat;
 
     if (!hasValidHandle()) {
@@ -206,7 +207,7 @@ void driver::acquireImage() {
     }
 }
 
-void driver::setImageDataFormat(std::string image_format) {
+void Driver::setImageDataFormat(std::string image_format) {
     int image_data_format;
 
     if (!hasValidHandle()) {
@@ -236,7 +237,7 @@ void driver::setImageDataFormat(std::string image_format) {
     image_data_format_ = image_data_format;
 }
 
-int driver::readParamsFromFile(std::string file_name) {
+int Driver::readParamsFromFile(std::string file_name) {
     std::ifstream fin(file_name.c_str());
     if (fin.fail()) {
         ROS_ERROR_STREAM("could not open file '" << file_name.c_str() << "'" << std::endl);
@@ -291,7 +292,7 @@ int driver::readParamsFromFile(std::string file_name) {
     setImageDataFormat(image_data_format_);
 }
 
-void driver::enableTrigger(unsigned char trigger_mode) {
+void Driver::enableTrigger(unsigned char trigger_mode) {
     if (!xiH_) {
         return;
     }
@@ -318,7 +319,7 @@ void driver::enableTrigger(unsigned char trigger_mode) {
     }
 }
 
-void driver::triggerDevice() {
+void Driver::triggerDevice() {
     if (!xiH_) return;
     XI_RETURN stat;
 
@@ -340,7 +341,7 @@ void driver::triggerDevice() {
 }
 
 // assign a part of available bandwidth to this cam:
-void driver::limitBandwidth(float factor) {
+void Driver::limitBandwidth(float factor) {
     if (!xiH_) return;
     XI_RETURN stat;
 
@@ -354,7 +355,7 @@ void driver::limitBandwidth(float factor) {
     setParamInt(XI_PRM_LIMIT_BANDWIDTH , cam_bandwidth);
 }
 
-bool driver::setParamInt(const char *param, int var, bool global) {
+bool Driver::setParamInt(const char *param, int var, bool global) {
     // global or device handle?
     HANDLE handle = (global)?0:xiH_;
     XI_RETURN stat = xiSetParamInt(handle, param, var);
@@ -369,7 +370,7 @@ bool driver::setParamInt(const char *param, int var, bool global) {
     return result;
 }
 
-int driver::getParamInt(const char *param, bool global) {
+int Driver::getParamInt(const char *param, bool global) {
     int var;
     // global or device handle?
     HANDLE handle = (global)?0:xiH_;
@@ -384,7 +385,7 @@ int driver::getParamInt(const char *param, bool global) {
     return var;
 }
 
-bool driver::setParamFloat(const char *param, float var, bool global) {
+bool Driver::setParamFloat(const char *param, float var, bool global) {
     // global or device handle?
     HANDLE handle = (global)?0:xiH_;
     XI_RETURN stat = xiSetParamFloat(handle, param, var);
@@ -399,7 +400,7 @@ bool driver::setParamFloat(const char *param, float var, bool global) {
     return result;
 }
 
-float driver::getParamFloat(const char *param, bool global) {
+float Driver::getParamFloat(const char *param, bool global) {
     float var;
     // global or device handle?
     HANDLE handle = (global)?0:xiH_;
@@ -414,7 +415,7 @@ float driver::getParamFloat(const char *param, bool global) {
     return var;
 }
 
-std::string driver::getParamString(const char *param, bool global) {
+std::string Driver::getParamString(const char *param, bool global) {
     char var[256];
     // global or device handle?
     HANDLE handle = (global)?0:xiH_;

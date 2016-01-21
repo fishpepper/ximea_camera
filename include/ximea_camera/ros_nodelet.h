@@ -21,17 +21,17 @@ All rights reserved.
 namespace ximea_camera {
 
 /** ximea xiAPI camera driver nodelet implementation. */
-class ros_nodelet : public nodelet::Nodelet{
+class RosNodelet : public nodelet::Nodelet{
  public:
-  ros_nodelet();
-  ~ros_nodelet();
+  RosNodelet();
+  ~RosNodelet();
 
  private:
   virtual void onInit();
   virtual void devicePoll();
 
   volatile bool running_;
-  boost::shared_ptr<ros_driver> drv_;
+  boost::shared_ptr<RosDriver> drv_;
   boost::shared_ptr<boost::thread> deviceThread_;
 };
 

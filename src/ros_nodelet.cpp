@@ -10,15 +10,15 @@ All rights reserved.
 #include <string>
 #include "ximea_camera/ros_nodelet.h"
 
-using ximea_camera::ros_nodelet;
-using ximea_camera::ros_driver;
+using ximea_camera::RosNodelet;
+using ximea_camera::RosDriver;
 
-ros_nodelet::ros_nodelet() : running_(false) {
+RosNodelet::RosNodelet() : running_(false) {
     // nothing to do
-    NODELET_INFO("ros_nodelet initialized");
+    NODELET_INFO("RosNodelet initialized");
 }
 
-ros_nodelet::~ros_nodelet() {
+RosNodelet::~RosNodelet() {
     if (running_) {
         NODELET_INFO("shutting down driver thread");
         running_ = false;
@@ -31,11 +31,11 @@ ros_nodelet::~ros_nodelet() {
     }
 }
 
-void ros_nodelet::onInit() {
+void RosNodelet::onInit() {
     std::string camera_name;
     std::string config_filename;
 
-    NODELET_INFO("ros_nodelet::onInit()\n");
+    NODELET_INFO("RosNodelet::onInit()\n");
 
     ros::NodeHandle priv_nh(getPrivateNodeHandle());
     ros::NodeHandle node(getNodeHandle());
@@ -49,7 +49,7 @@ void ros_nodelet::onInit() {
 
 
     // create driver
-    drv_.reset(new ros_driver(node, config_filename));
+    drv_.reset(new RosDriver(node, config_filename));
 
     // open device
     drv_->openDevice();
@@ -60,12 +60,12 @@ void ros_nodelet::onInit() {
     // spawn device thread
     running_ = true;
     deviceThread_ = boost::shared_ptr< boost::thread >
-            (new boost::thread(boost::bind(&ros_nodelet::devicePoll, this)));
+            (new boost::thread(boost::bind(&RosNodelet::devicePoll, this)));
 }
 
 
 
-void ros_nodelet::devicePoll() {
+void RosNodelet::devicePoll() {
     while (running_) {
         drv_->acquireImage();
         drv_->publishImageAndCamInfo();
@@ -73,4 +73,4 @@ void ros_nodelet::devicePoll() {
 }
 
 // Register this plugin with pluginlib.  Names must match nodelet_velodyne.xml.
-PLUGINLIB_EXPORT_CLASS(ximea_camera::ros_nodelet, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS(ximea_camera::RosNodelet, nodelet::Nodelet);

@@ -40,7 +40,7 @@ int main(int argc, char ** argv) {
         }
     }
 
-    ximea_camera::ros_cluster xd(file_names);
+    ximea_camera::RosCluster xd(file_names);
     xd.clusterInit();
 
     // TODO(myself): need to robustify against replugging and cntrlc

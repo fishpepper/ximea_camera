@@ -34,11 +34,11 @@ All rights reserved.
 
 namespace ximea_camera {
 
-class driver{
+class Driver{
  public:
     // if no serial no is specified select the first cam on the bus
-    explicit driver(int serial_no = 0 , std::string cam_name = "");
-    explicit driver(std::string file_name);
+    explicit Driver(int serial_no = 0 , std::string cam_name = "");
+    explicit Driver(std::string file_name);
 
     int readParamsFromFile(std::string file_name);
     virtual void applyParameters();

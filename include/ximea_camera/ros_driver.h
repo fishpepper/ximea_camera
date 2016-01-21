@@ -31,11 +31,11 @@ All rights reserved.
 
 namespace ximea_camera {
 
-class ros_driver : public driver {
+class RosDriver : public Driver {
  public:
-    ros_driver(const ros::NodeHandle &nh, std::string cam_name, int serial_no,
+    RosDriver(const ros::NodeHandle &nh, std::string cam_name, int serial_no,
                      std::string yaml_url);
-    ros_driver(const ros::NodeHandle &nh, std::string file_name);
+    RosDriver(const ros::NodeHandle &nh, std::string file_name);
     virtual void setImageDataFormat(std::string s);
 
     // since these 2 functions should have the same time stamp we leave it up to the user to
@@ -66,7 +66,7 @@ class ros_driver : public driver {
     int cam_buffer_size_;
     int bpp_;  // the next 2 paramaeters are used by the ros_image_transport publisher
     std::string encoding_;
-    dynamic_reconfigure::Server<ximea_camera::xiAPIConfig> *server;
+    dynamic_reconfigure::Server<ximea_camera::xiAPIConfig> *reconf_server_;
 };
 
 }  // namespace ximea_camera
