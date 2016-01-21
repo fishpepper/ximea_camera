@@ -13,8 +13,8 @@ All rights reserved.
 
 ********************************************************************************/
 
-#ifndef INCLUDE_XIMEA_CAMERA_XIMEA_ROS_DRIVER_H_
-#define INCLUDE_XIMEA_CAMERA_XIMEA_ROS_DRIVER_H_
+#ifndef INCLUDE_XIMEA_CAMERA_ROS_DRIVER_H_
+#define INCLUDE_XIMEA_CAMERA_ROS_DRIVER_H_
 
 #include <camera_info_manager/camera_info_manager.h>
 #include <dynamic_reconfigure/server.h>
@@ -23,17 +23,19 @@ All rights reserved.
 #include <ros/ros.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/Image.h>
-#include <ximea_camera/ximea_driver.h>
+#include <ximea_camera/driver.h>
 
 #include <string>
 
 #include "ximea_camera/xiAPIConfig.h"
 
-class ximea_ros_driver : public ximea_driver {
+namespace ximea_camera {
+
+class ros_driver : public driver {
  public:
-    ximea_ros_driver(const ros::NodeHandle &nh, std::string cam_name, int serial_no,
+    ros_driver(const ros::NodeHandle &nh, std::string cam_name, int serial_no,
                      std::string yaml_url);
-    ximea_ros_driver(const ros::NodeHandle &nh, std::string file_name);
+    ros_driver(const ros::NodeHandle &nh, std::string file_name);
     virtual void setImageDataFormat(std::string s);
 
     // since these 2 functions should have the same time stamp we leave it up to the user to
@@ -63,4 +65,6 @@ class ximea_ros_driver : public ximea_driver {
     dynamic_reconfigure::Server<ximea_camera::xiAPIConfig> *server;
 };
 
-#endif  // INCLUDE_XIMEA_CAMERA_XIMEA_ROS_DRIVER_H_
+}  // namespace ximea_camera
+
+#endif  // INCLUDE_XIMEA_CAMERA_ROS_DRIVER_H_

@@ -15,21 +15,23 @@ All rights reserved.
 
 #include <boost/date_time.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <ximea_camera/ximea_driver.h>
+#include <ximea_camera/driver.h>
 #include <exception>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 
-#define XIMEA_DRIVER_DEBUG_LEVEL XI_DL_FATAL    // XI_DL_DETAIL
+#define driver_DEBUG_LEVEL XI_DL_FATAL    // XI_DL_DETAIL
 
-ximea_driver::ximea_driver(int serial_no, std::string cam_name) {
+using ximea_camera::driver;
+
+driver::driver(int serial_no, std::string cam_name) {
     serial_no_ = serial_no;
     cam_name_ = cam_name;
     assignDefaultValues();
 }
 
-void ximea_driver::assignDefaultValues() {
+void driver::assignDefaultValues() {
     cam_resolution_w_ = 0;
     cam_resolution_h_ = 0;
     bayer_filter_array_ = XI_CFA_NONE;
@@ -56,16 +58,16 @@ void ximea_driver::assignDefaultValues() {
     camera_to_localtime_offset_ = boost::posix_time::microsec_clock::local_time();
 }
 
-ximea_driver::ximea_driver(std::string file_name) {
+driver::driver(std::string file_name) {
     assignDefaultValues();
     readParamsFromFile(file_name);
-    ROS_INFO_STREAM("ximea_driver: reading paramter values from file: " << file_name);
+    ROS_INFO_STREAM("driver: reading paramter values from file: " << file_name);
 }
 
-bool ximea_driver::errorHandling(XI_RETURN ret, std::string command,
+bool driver::errorHandling(XI_RETURN ret, std::string command,
                                  std::string param, float val) {
     if (ret != XI_OK) {
-        std::cout << "ximea_driver: " << command << "(" << param << ", "<< val
+        std::cout << "driver: " << command << "(" << param << ", "<< val
                   << " ) failed (errno " << ret << ", handle=" << xiH_ << ")\n";
         // handle error cases:
         if (ret == XI_INVALID_ARG) {
@@ -83,7 +85,7 @@ bool ximea_driver::errorHandling(XI_RETURN ret, std::string command,
     }
 }
 
-void ximea_driver::fetchValues() {
+void driver::fetchValues() {
     // fetch frame size from cam:
     cam_resolution_w_ = getParamInt(XI_PRM_WIDTH XI_PRM_INFO_MAX);
     cam_resolution_h_ = getParamInt(XI_PRM_HEIGHT XI_PRM_INFO_MAX);
@@ -93,17 +95,17 @@ void ximea_driver::fetchValues() {
 }
 
 
-void ximea_driver::applyParameters() {
+void driver::applyParameters() {
     setImageDataFormat(image_data_format_);
     setExposure(exposure_time_);
     setROI(rect_left_, rect_top_, rect_width_, rect_height_);
 }
 
-void ximea_driver::openDevice() {
+void driver::openDevice() {
     XI_RETURN stat;
 
     // set xiapi debug level:
-    setParamInt(XI_PRM_DEBUG_LEVEL, XIMEA_DRIVER_DEBUG_LEVEL, true);
+    setParamInt(XI_PRM_DEBUG_LEVEL, driver_DEBUG_LEVEL, true);
 
     // disable auto bandwidth measurements:
     setParamInt(XI_PRM_AUTO_BANDWIDTH_CALCULATION, XI_OFF, true);
@@ -141,7 +143,7 @@ void ximea_driver::openDevice() {
     sync_camera_timestamp();
 }
 
-void ximea_driver::sync_camera_timestamp() {
+void driver::sync_camera_timestamp() {
     // this will store the current time as a timestamp
     // and trigger a reset of the cameras internal timestamp
     // assuming that the setParamInt call is fast enough
@@ -158,14 +160,14 @@ void ximea_driver::sync_camera_timestamp() {
     setParamInt(XI_PRM_TS_RST_SOURCE, XI_TS_RST_SRC_SW);
 }
 
-void ximea_driver::closeDevice() {
+void driver::closeDevice() {
     if (xiH_) {
         xiCloseDevice(xiH_);
         xiH_ = NULL;
     }
 }
 
-void ximea_driver::stopAcquisition() {
+void driver::stopAcquisition() {
     XI_RETURN stat;
     if (!hasValidHandle()) {
         return;
@@ -177,7 +179,7 @@ void ximea_driver::stopAcquisition() {
     acquisition_active_ = false;
 }
 
-void ximea_driver::startAcquisition() {
+void driver::startAcquisition() {
     if (!hasValidHandle()) {
         return;
     }
@@ -187,7 +189,7 @@ void ximea_driver::startAcquisition() {
     acquisition_active_ = true;
 }
 
-void ximea_driver::acquireImage() {
+void driver::acquireImage() {
     XI_RETURN stat;
 
     if (!hasValidHandle()) {
@@ -214,7 +216,7 @@ void ximea_driver::acquireImage() {
     }
 }
 
-void ximea_driver::setImageDataFormat(std::string image_format) {
+void driver::setImageDataFormat(std::string image_format) {
     int image_data_format;
 
     if (!hasValidHandle()) {
@@ -244,7 +246,7 @@ void ximea_driver::setImageDataFormat(std::string image_format) {
     image_data_format_ = image_data_format;
 }
 
-void ximea_driver::setROI(int l, int t, int w, int h) {
+void driver::setROI(int l, int t, int w, int h) {
     int tmp;
 
     if (!hasValidHandle()) {
@@ -305,7 +307,7 @@ void ximea_driver::setROI(int l, int t, int w, int h) {
     std::cout << "top increment " << tmp << std::endl;
 }
 
-void ximea_driver::setExposure(int time) {
+void driver::setExposure(int time) {
     bool result = setParamInt(XI_PRM_EXPOSURE, time);
     if (result) {
         exposure_time_ = time;
@@ -313,7 +315,7 @@ void ximea_driver::setExposure(int time) {
 }
 
 
-int ximea_driver::readParamsFromFile(std::string file_name) {
+int driver::readParamsFromFile(std::string file_name) {
     std::ifstream fin(file_name.c_str());
     if (fin.fail()) {
         ROS_ERROR_STREAM("could not open file '" << file_name.c_str() << "'" << std::endl);
@@ -400,7 +402,7 @@ int ximea_driver::readParamsFromFile(std::string file_name) {
     setImageDataFormat(image_data_format_);
 }
 
-void ximea_driver::enableTrigger(unsigned char trigger_mode) {
+void driver::enableTrigger(unsigned char trigger_mode) {
     if (!xiH_) {
         return;
     }
@@ -427,7 +429,7 @@ void ximea_driver::enableTrigger(unsigned char trigger_mode) {
     }
 }
 
-void ximea_driver::triggerDevice() {
+void driver::triggerDevice() {
     if (!xiH_) return;
     XI_RETURN stat;
 
@@ -449,7 +451,7 @@ void ximea_driver::triggerDevice() {
 }
 
 // assign a part of available bandwidth to this cam:
-void ximea_driver::limitBandwidth(float factor) {
+void driver::limitBandwidth(float factor) {
     if (!xiH_) return;
     XI_RETURN stat;
 
@@ -463,7 +465,7 @@ void ximea_driver::limitBandwidth(float factor) {
     setParamInt(XI_PRM_LIMIT_BANDWIDTH , cam_bandwidth);
 }
 
-bool ximea_driver::setParamInt(const char *param, int var, bool global) {
+bool driver::setParamInt(const char *param, int var, bool global) {
     // global or device handle?
     HANDLE handle = (global)?0:xiH_;
     XI_RETURN stat = xiSetParamInt(handle, param, var);
@@ -478,7 +480,7 @@ bool ximea_driver::setParamInt(const char *param, int var, bool global) {
     return result;
 }
 
-int ximea_driver::getParamInt(const char *param, bool global) {
+int driver::getParamInt(const char *param, bool global) {
     int var;
     // global or device handle?
     HANDLE handle = (global)?0:xiH_;
@@ -493,7 +495,7 @@ int ximea_driver::getParamInt(const char *param, bool global) {
     return var;
 }
 
-bool ximea_driver::setParamFloat(const char *param, float var, bool global) {
+bool driver::setParamFloat(const char *param, float var, bool global) {
     // global or device handle?
     HANDLE handle = (global)?0:xiH_;
     XI_RETURN stat = xiSetParamFloat(handle, param, var);
@@ -508,7 +510,7 @@ bool ximea_driver::setParamFloat(const char *param, float var, bool global) {
     return result;
 }
 
-float ximea_driver::getParamFloat(const char *param, bool global) {
+float driver::getParamFloat(const char *param, bool global) {
     float var;
     // global or device handle?
     HANDLE handle = (global)?0:xiH_;
@@ -523,7 +525,7 @@ float ximea_driver::getParamFloat(const char *param, bool global) {
     return var;
 }
 
-std::string ximea_driver::getParamString(const char *param, bool global) {
+std::string driver::getParamString(const char *param, bool global) {
     char var[256];
     // global or device handle?
     HANDLE handle = (global)?0:xiH_;

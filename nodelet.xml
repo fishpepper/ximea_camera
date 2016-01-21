@@ -1,6 +1,6 @@
-<library path="lib/libximea_nodelet">
-  <class name="ximea_camera/ximea_nodelet"
-         type="ximea_camera::ximea_nodelet"
+<library path="lib/libximea_camera_nodelet">
+  <class name="ximea_camera/ros_nodelet"
+         type="ximea_camera::ros_nodelet"
          base_class_type="nodelet::Nodelet">
     <description> 
       Ximea xiAPI camera camera driver nodelet.

@@ -8,16 +8,17 @@ All rights reserved.
 ********************************************************************************/
 
 #include <string>
-#include "ximea_camera/ximea_nodelet.h"
+#include "ximea_camera/ros_nodelet.h"
 
-using ximea_camera::ximea_nodelet;
+using ximea_camera::ros_nodelet;
+using ximea_camera::ros_driver;
 
-ximea_nodelet::ximea_nodelet() : running_(false) {
+ros_nodelet::ros_nodelet() : running_(false) {
     // nothing to do
-    NODELET_INFO("ximea_nodelet initialized");
+    NODELET_INFO("ros_nodelet initialized");
 }
 
-ximea_nodelet::~ximea_nodelet() {
+ros_nodelet::~ros_nodelet() {
     if (running_) {
         NODELET_INFO("shutting down driver thread");
         running_ = false;
@@ -30,11 +31,11 @@ ximea_nodelet::~ximea_nodelet() {
     }
 }
 
-void ximea_nodelet::onInit() {
+void ros_nodelet::onInit() {
     std::string camera_name;
     std::string config_filename;
 
-    NODELET_INFO("ximea_nodelet::onInit()\n");
+    NODELET_INFO("ros_nodelet::onInit()\n");
 
     ros::NodeHandle priv_nh(getPrivateNodeHandle());
     ros::NodeHandle node(getNodeHandle());
@@ -48,7 +49,7 @@ void ximea_nodelet::onInit() {
 
 
     // create driver
-    drv_.reset(new ximea_ros_driver(node, config_filename));
+    drv_.reset(new ros_driver(node, config_filename));
 
     // open device
     drv_->openDevice();
@@ -73,12 +74,12 @@ void ximea_nodelet::onInit() {
     // spawn device thread
     running_ = true;
     deviceThread_ = boost::shared_ptr< boost::thread >
-            (new boost::thread(boost::bind(&ximea_nodelet::devicePoll, this)));
+            (new boost::thread(boost::bind(&ros_nodelet::devicePoll, this)));
 }
 
 
 
-void ximea_nodelet::devicePoll() {
+void ros_nodelet::devicePoll() {
     while (running_) {
         drv_->acquireImage();
         drv_->publishImageAndCamInfo();
@@ -86,4 +87,4 @@ void ximea_nodelet::devicePoll() {
 }
 
 // Register this plugin with pluginlib.  Names must match nodelet_velodyne.xml.
-PLUGINLIB_EXPORT_CLASS(ximea_camera::ximea_nodelet, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS(ximea_camera::ros_nodelet, nodelet::Nodelet);

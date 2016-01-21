@@ -12,8 +12,8 @@ Copyright 2016  Abdelhamid El-Bably (University of Waterloo)
 All rights reserved.
 
 ********************************************************************************/
-#ifndef INCLUDE_XIMEA_CAMERA_XIMEA_DRIVER_H_
-#define INCLUDE_XIMEA_CAMERA_XIMEA_DRIVER_H_
+#ifndef INCLUDE_XIMEA_CAMERA_DRIVER_H_
+#define INCLUDE_XIMEA_CAMERA_DRIVER_H_
 
 #include <camera_info_manager/camera_info_manager.h>
 #include <image_transport/image_transport.h>
@@ -32,11 +32,13 @@ All rights reserved.
 #include <map>
 #include <string>
 
-class ximea_driver{
+namespace ximea_camera {
+
+class driver{
  public:
     // if no serial no is specified select the first cam on the bus
-    explicit ximea_driver(int serial_no = 0 , std::string cam_name = "");
-    explicit ximea_driver(std::string file_name);
+    explicit driver(int serial_no = 0 , std::string cam_name = "");
+    explicit driver(std::string file_name);
 
     int readParamsFromFile(std::string file_name);
     void applyParameters();
@@ -122,4 +124,6 @@ class ximea_driver{
     unsigned char trigger_mode_;
 };
 
-#endif  // INCLUDE_XIMEA_CAMERA_XIMEA_DRIVER_H_
+}  // namespace ximea_camera
+
+#endif  // INCLUDE_XIMEA_CAMERA_DRIVER_H_
