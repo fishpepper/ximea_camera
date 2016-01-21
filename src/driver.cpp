@@ -38,15 +38,7 @@ void driver::assignDefaultValues() {
     allocated_bandwidth_ = 1.0;
     cams_on_bus_ = 4;
     bandwidth_safety_margin_ = 30;
-    binning_enabled_ = false;
-    downsample_factor_ = false;
-    auto_exposure_ = false;
-    exposure_time_ = 1000;
     image_data_format_ = "XI_MONO8";
-    rect_left_ = 0;
-    rect_top_ = 0;
-    rect_width_ = cam_resolution_w_;
-    rect_height_ = cam_resolution_h_;
     xiH_ = NULL;
     // pre init all XI_IMG fields to zero:
     memset(&image_, 0, sizeof(XI_IMG));
@@ -97,8 +89,6 @@ void driver::fetchValues() {
 
 void driver::applyParameters() {
     setImageDataFormat(image_data_format_);
-    setExposure(exposure_time_);
-    setROI(rect_left_, rect_top_, rect_width_, rect_height_);
 }
 
 void driver::openDevice() {
@@ -246,82 +236,12 @@ void driver::setImageDataFormat(std::string image_format) {
     image_data_format_ = image_data_format;
 }
 
-void driver::setROI(int l, int t, int w, int h) {
-    int tmp;
-
-    if (!hasValidHandle()) {
-        return;
-    }
-
-    if (l < 0 || l > cam_resolution_w_) {
-        rect_left_ = 0;
-    } else {
-        rect_left_ = l;
-    }
-    if (t < 0 || t > cam_resolution_h_) {
-        rect_top_ = 0;
-    } else {
-        rect_top_ = t;
-    }
-
-    if (w < 0 || w > cam_resolution_w_) {
-        rect_width_ = cam_resolution_w_;
-    } else {
-        rect_width_ = w;
-    }
-
-    if (h < 0 || h > cam_resolution_h_) {
-        rect_height_ = cam_resolution_h_;
-    } else {
-        rect_height_ = h;
-    }
-
-    if (l + w > cam_resolution_w_) {
-        rect_left_ =  0;
-        rect_width_ = cam_resolution_w_;
-    }
-    if (h + t > cam_resolution_h_) {
-        rect_top_ =  0;
-        rect_height_ = cam_resolution_h_;
-    }
-
-    std::cout << "will set roi to: " << rect_width_ << "x" << rect_height_
-              << " " << rect_left_ << " " << rect_top_ << std::endl;
-
-    setParamInt(XI_PRM_WIDTH, rect_width_);
-    setParamInt(XI_PRM_HEIGHT, rect_height_);
-    setParamInt(XI_PRM_OFFSET_X, rect_left_);
-    setParamInt(XI_PRM_OFFSET_Y, rect_top_);
-
-    // show some info:
-    tmp = getParamInt(XI_PRM_WIDTH XI_PRM_INFO_INCREMENT);
-    std::cout << "width increment " << tmp << std::endl;
-
-    tmp = getParamInt(XI_PRM_HEIGHT XI_PRM_INFO_INCREMENT);
-    std::cout << "height increment " << tmp << std::endl;
-
-    tmp = getParamInt(XI_PRM_OFFSET_X XI_PRM_INFO_INCREMENT);
-    std::cout << "left increment " << tmp << std::endl;
-
-    tmp = getParamInt(XI_PRM_OFFSET_Y XI_PRM_INFO_INCREMENT);
-    std::cout << "top increment " << tmp << std::endl;
-}
-
-void driver::setExposure(int time) {
-    bool result = setParamInt(XI_PRM_EXPOSURE, time);
-    if (result) {
-        exposure_time_ = time;
-    }
-}
-
-
 int driver::readParamsFromFile(std::string file_name) {
     std::ifstream fin(file_name.c_str());
     if (fin.fail()) {
         ROS_ERROR_STREAM("could not open file '" << file_name.c_str() << "'" << std::endl);
         exit(-1);
     }
-
 
     YAML::Node doc = YAML::LoadFile(file_name);
     std::string tmpS;
@@ -354,37 +274,6 @@ int driver::readParamsFromFile(std::string file_name) {
     } catch (std::runtime_error) {}
 
     try {
-        exposure_time_ = doc["exposure_time"].as<int>();
-    } catch (std::runtime_error) {}
-
-    try {
-        auto_exposure_ = doc["auto_exposure"].as<bool>();
-    } catch (std::runtime_error) {}
-
-    try {
-        binning_enabled_ = doc["binning_enabled"].as<bool>();
-    } catch (std::runtime_error) {}
-
-    try {
-        downsample_factor_ = doc["downsample_factor_"].as<int>();
-    } catch (std::runtime_error) {}
-
-    try {
-        rect_left_ = doc["rect_left"].as<int>();
-    } catch (std::runtime_error) {}
-
-    try {
-        rect_top_ = doc["rect_top"].as<int>();
-    } catch (std::runtime_error) {}
-    try {
-        rect_width_ = doc["rect_width"].as<int>();
-    } catch (std::runtime_error) {}
-
-    try {
-        rect_height_ = doc["rect_height"].as<int>();
-    } catch (std::runtime_error) {}
-
-    try {
         allocated_bandwidth_ = doc["allocated_bandwidth"].as<float>();
     } catch (std::runtime_error) { std::cerr << "missing parameter allocated_bandwidth. "
                                                 "this is mandatory!\n";
@@ -395,10 +284,10 @@ int driver::readParamsFromFile(std::string file_name) {
         std::cerr << doc["use_cam_timestamp"];
     } catch (std::runtime_error) { std::cerr << "missing parameter use_cam_timestamp";}
 
-    setROI(rect_left_, rect_top_, rect_width_, rect_height_);
     try {
         image_data_format_ = doc["image_data_format"].as<std::string>();
     } catch (std::runtime_error) {}
+
     setImageDataFormat(image_data_format_);
 }
 

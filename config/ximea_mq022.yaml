@@ -1,11 +1,6 @@
 serial_no: 0
 cam_name: "camera_mq022"
 yaml_url: "package://mcptam/calibrations/camera1.yaml"
-exposure_time: 30000
-rect_left: 0
-rect_top: 0
-rect_height: 1080
-rect_width: 2040
 allocated_bandwidth: 1.0
 use_cam_timestamp: true
 image_data_format: "XI_RAW8"

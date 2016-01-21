@@ -41,7 +41,7 @@ class driver{
     explicit driver(std::string file_name);
 
     int readParamsFromFile(std::string file_name);
-    void applyParameters();
+    virtual void applyParameters();
 
     // 0 none, 1 soft_trigger, 2 hard_trigger_rising edge (unsupported) FIXME
     void enableTrigger(unsigned char trigger_mode);
@@ -59,8 +59,7 @@ class driver{
 
     // this is virtual because the ros class needs to do a bit more work to publish the right image
     virtual void setImageDataFormat(std::string s);
-    void setROI(int rect_left, int rect_top, int rect_width, int rect_height);
-    void setExposure(int time);
+
     bool hasValidHandle() {
         return xiH_ == NULL ? false : true;
     }
@@ -108,15 +107,9 @@ class driver{
     int bandwidth_safety_margin_;
     int frame_rate_;
     int bandwidth_;
-    int exposure_time_;
-    bool auto_exposure_;
-    bool binning_enabled_;
+
     float allocated_bandwidth_;
-    int downsample_factor_;
-    int rect_left_;
-    int rect_top_;
-    int rect_width_;
-    int rect_height_;
+
     int cam_resolution_h_;
     int cam_resolution_w_;
     bool acquisition_active_;

@@ -39,14 +39,13 @@ class ros_cluster {
     void clusterPublishCamInfo();
     void clusterPublishImageAndCamInfo();
     void clusterEnd();
+
     bool isDeviceOpen() {
         return devices_open_;
     }
 
     // individual camera functions (encapsulated for thread security)
-    void setExposure(int serial_no, int time);
     void setImageDataFormat(int serial_no, std::string s);
-    void setROI(int serial_no, int l, int t, int w, int h);
 
  private:
     std::vector<boost::shared_ptr<ros_driver> > cams_;
@@ -54,7 +53,6 @@ class ros_cluster {
     bool devices_open_;
     int num_cams_;
     int getCameraIndex(int serial_no);
-    bool fixed_init_;
 };
 
 }  // namespace ximea_camera

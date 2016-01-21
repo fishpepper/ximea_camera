@@ -12,7 +12,10 @@
 
     <!-- camera driver -->
     <node pkg="nodelet" type="nodelet" name="ximea_nodelet" args="load ximea_camera/ros_nodelet ximea_nodelet_manager">
-    <param name="settings_yaml" type="string" value="$(arg settings)" />
+      <param name="settings_yaml" type="string" value="$(arg settings)" />
+      <param name="aeag" type="bool" value="1" />
+      <param name="width" type="int" value="2040" />
+      <param name="height" type="int" value="1020" />
     </node>
 
     <!-- Debayer and publish monochrome and color topics -->
