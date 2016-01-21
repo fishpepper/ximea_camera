@@ -22,15 +22,6 @@ using ximea_camera::ros_driver;
 using ximea_camera::driver;
 
 
-// FIXME: remove this contants
-int serial_nos[3] = { 32300651 ,  33300151 , 32301251};
-std::string cam_names[3] = {std::string("camera1"), std::string("camera2"), std::string("camera3")};
-std::string calib_file_names[3] = {
-    "package://mcptam/calibrations/camera1.yaml",
-    "package://mcptam/calibrations/camera2.yaml",
-    "package://mcptam/calibrations/camera3.yaml"
-};
-
 std::string getCamNameFromYaml(std::string file_name) {
     std::ifstream fin(file_name.c_str());
     if (fin.fail()) {
@@ -44,23 +35,7 @@ std::string getCamNameFromYaml(std::string file_name) {
     return ret;
 }
 
-ros_cluster::ros_cluster(int num_cams)
-    : USB_BUS_SAFETY_MARGIN(0), USB3_BANDWIDTH(2400) {
-    num_cams_ = num_cams;
-    devices_open_ = false;
-    for (int i = 0 ; i < num_cams; i ++) {
-        ros::NodeHandle nh(std::string("/") + cam_names[i]);
-
-        boost::shared_ptr<ros_driver> ros_driver_ptr(
-                    new ros_driver(nh, cam_names[i], serial_nos[i], calib_file_names[i]));
-
-        add_camera(ros_driver_ptr);
-    }
-    fixed_init_ = true;
-}
-
-ros_cluster::ros_cluster(std::vector<std::string> filenames)
-    : USB_BUS_SAFETY_MARGIN(0), USB3_BANDWIDTH(2400) {
+ros_cluster::ros_cluster(std::vector<std::string> filenames) {
     devices_open_ = false;
     for (int i = 0 ; i < filenames.size(); i ++) {
         std::string cam_name = getCamNameFromYaml(filenames[i]);

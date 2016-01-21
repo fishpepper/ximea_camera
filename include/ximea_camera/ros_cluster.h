@@ -54,8 +54,6 @@ class ros_cluster {
     bool devices_open_;
     int num_cams_;
     int getCameraIndex(int serial_no);
-    const int USB_BUS_SAFETY_MARGIN;
-    const int USB3_BANDWIDTH;
     bool fixed_init_;
 };
 
