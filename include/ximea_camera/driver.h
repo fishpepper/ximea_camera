@@ -53,6 +53,7 @@ class driver{
     void stopAcquisition();
     void acquireImage();
     void triggerDevice();
+
     int getSerialNo() const {
         return serial_no_;
     }
@@ -99,7 +100,7 @@ class driver{
  private:
     void assignDefaultValues();
     void fetchValues();
-    void sync_camera_timestamp();
+    void syncCameraTimestamp();
 
     // variables for ximea api internals
     int serial_no_;

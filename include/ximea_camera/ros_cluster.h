@@ -29,8 +29,8 @@ class ros_cluster {
  public:
     explicit ros_cluster(int num_cams);
     explicit ros_cluster(std::vector < std::string > filenames);
-    void add_camera(boost::shared_ptr<ros_driver> xd);
-    void remove_camera(int serial_no);
+    void addCamera(boost::shared_ptr<ros_driver> xd);
+    void removeCamera(int serial_no);
 
     // cluster functions
     void clusterInit();
@@ -48,11 +48,12 @@ class ros_cluster {
     void setImageDataFormat(int serial_no, std::string s);
 
  private:
+    int getCameraIndex(int serial_no);
+
     std::vector<boost::shared_ptr<ros_driver> > cams_;
     std::vector<boost::thread*> threads_;
     bool devices_open_;
     int num_cams_;
-    int getCameraIndex(int serial_no);
 };
 
 }  // namespace ximea_camera
