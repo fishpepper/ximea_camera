@@ -114,9 +114,9 @@ void ros_cluster::clusterAcquire() {
 
 void ros_cluster::clusterPublishImages() {
     // FIXME: might want to think as to how to multithread this
+    // FIXME: use cam timestamp if requested
     for (int i = 0; i < cams_.size(); i  ++) {
-        threads_[i] = new boost::thread(&ros_driver::publishImage,
-                                        cams_[i], ros::Time::now());
+        threads_[i] = new boost::thread(&ros_driver::publishImage, cams_[i], ros::Time::now());
     }
 
     for (int i = 0; i < cams_.size(); i  ++) {
