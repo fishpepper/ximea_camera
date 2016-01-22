@@ -30,13 +30,14 @@ int main(int argc, char ** argv) {
 
     // check size of camera file
     if (file_names.size() == 0) {
-        ROS_ERROR("ximea_driver: No camera files name specified. Please set "
+        ROS_ERROR("ximea_camera: No camera files name specified. Please set "
                   "'camera_param_file_paths' parameter to camera yaml file "
                   "locations in launch file");
         return 0;
     } else {
         for (unsigned int i = 0; i < file_names.size(); i++) {
-            ROS_INFO_STREAM("loading camera parameter file: " << file_names[i] << std::endl);
+            ROS_INFO_STREAM("ximea_camera: loading camera parameter file: " <<
+                            file_names[i] << std::endl);
         }
     }
 

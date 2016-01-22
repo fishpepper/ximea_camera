@@ -15,15 +15,14 @@ using ximea_camera::RosDriver;
 
 RosNodelet::RosNodelet() : running_(false) {
     // nothing to do
-    NODELET_INFO("RosNodelet initialized");
 }
 
 RosNodelet::~RosNodelet() {
     if (running_) {
-        NODELET_INFO("shutting down driver thread");
+        NODELET_INFO("ximea_camera: shutting down driver thread");
         running_ = false;
         deviceThread_->join();
-        NODELET_INFO("driver thread stopped");
+        NODELET_INFO("ximea_camera: driver thread stopped");
     }
     if (drv_->hasValidHandle()) {
         drv_->stopAcquisition();
@@ -35,13 +34,13 @@ void RosNodelet::onInit() {
     std::string camera_name;
     std::string config_filename;
 
-    NODELET_INFO("RosNodelet::onInit()\n");
+    NODELET_DEBUG("ximea_camera: onInit()");
 
     ros::NodeHandle priv_nh(getPrivateNodeHandle());
     ros::NodeHandle node(getNodeHandle());
 
     if (!priv_nh.getParam("settings_yaml", config_filename)) {
-        NODELET_ERROR("failed to load camera settings. please pass config yaml "
+        NODELET_ERROR("ximea_camera: failed to load camera settings. please pass config yaml "
                       "as parameter 'settings_yaml' "
                       "(e.g. using _settings_yaml:=\"ximea_mq022.yaml\")\n");
         exit(EXIT_FAILURE);

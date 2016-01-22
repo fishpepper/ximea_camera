@@ -46,7 +46,7 @@ void RosDriver::attachToDynamicReconfigureServer() {
     // IMPORTANT: do this after the cam is set up in order
     // to set the default values (or the values passed by the launch file params)
     // immediately
-    ROS_INFO("connecting to dynamic reconfiguration server");
+    ROS_DEBUG("ximea_camera: connecting to dynamic reconfiguration server");
     ros::NodeHandle reconf_node(pnh_, "settings");
     reconf_server_ = new dynamic_reconfigure::Server<ximea_camera::xiAPIConfig>(reconf_node);
     reconf_server_->setCallback(boost::bind(&RosDriver::dynamicReconfigureCallback, this, _1, _2));
@@ -129,7 +129,9 @@ void RosDriver::setImageDataFormat(std::string image_format) {
         bpp_ = 3;
     } else if (image_format == std::string("XI_RGB_PLANAR")) {
         image_data_format = XI_MONO8;
-        std::cerr << "This is unsupported in ROS default to XI_MONO8" << std::endl;
+        ROS_ERROR("ximea_camera: this image format (%s) is unsupported in ROS defaulting to MONO8",
+                 image_format.c_str());
+        encoding_ = sensor_msgs::image_encodings::MONO8;
         bpp_ = 1;
     } else if (image_format == std::string("XI_RAW8")) {
         image_data_format = XI_RAW8;
@@ -141,6 +143,7 @@ void RosDriver::setImageDataFormat(std::string image_format) {
         case(XI_CFA_CMYG):
         case(XI_CFA_RGR):
             // fallback for invalid/unsupported values
+            ROS_ERROR("ximea_camera: unknown sensor bayer pattern, defaulting to mono8");
             encoding_ = sensor_msgs::image_encodings::MONO8;
             break;
 
