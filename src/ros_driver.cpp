@@ -216,6 +216,8 @@ bool RosDriver::dynamicReconfigureInt(const char *param, int value) {
     if (int_param_map.find(param) != int_param_map.end()) {
         if (int_param_map[param] == value) {
             // entry found & value matches -> no update necessary
+            ROS_DEBUG("dynamicReconfigureInt(%s, %d) not executed, "
+                      "cached value matches new value\n", param, value);
             return true;
         }
     }
@@ -228,6 +230,8 @@ bool RosDriver::dynamicReconfigureFloat(const char *param, float value) {
     if (float_param_map.find(param) != float_param_map.end()) {
         if (float_param_map[param] == value) {
             // entry found & value matches -> no update necessary
+            ROS_DEBUG("dynamicReconfigureFloat(%s, %f) not executed, "
+                      "cached value matches new value\n", param, value);
             return true;
         }
     }
@@ -254,15 +258,19 @@ void RosDriver::dynamicReconfigureCallback(const ximea_camera::xiAPIConfig &conf
         // fetch actual value:
         description->getValue(config, val);
 
-        //  std::cout << description->name << " " << description->type << "\n";
+        ROS_DEBUG("dynamicReconfigure request: name=%s type=%s ",
+                  description->name.c_str(), description->type.c_str());
 
         // copy data to ximea api:
         if (description->type == "double") {
+            ROS_DEBUG("%f\n", static_cast<float>(boost::any_cast<double>(val)));
             dynamicReconfigureFloat(description->name.c_str(),
                                       static_cast<float>(boost::any_cast<double>(val)));
         } else if (description->type == "bool") {
+            ROS_DEBUG("%d\n", (boost::any_cast<bool>(val))?1:0);
             dynamicReconfigureInt(description->name.c_str(), (boost::any_cast<bool>(val))?1:0);
         } else if (description->type == "int") {
+            ROS_DEBUG("%d\n", boost::any_cast<int>(val));
             dynamicReconfigureInt(description->name.c_str(), boost::any_cast<int>(val));
         } else {
             std::cerr << "ERROR: unsupported config type " << description->type  << "\n";

@@ -367,6 +367,9 @@ bool Driver::setParamInt(const char *param, int var, bool global) {
         int_param_map[param] = getParamInt(param, global);
     }
 
+    ROS_DEBUG("setParamInt(%s, %d, %s) -> result = %s\n",
+              param, var, (global?"GLOBAL":"LOCAL"), (result?"SUCCESS":"FAILURE"));
+
     return result;
 }
 
@@ -396,6 +399,9 @@ bool Driver::setParamFloat(const char *param, float var, bool global) {
     if ((result) && (!global)) {
         float_param_map[param] = getParamFloat(param, global);
     }
+
+    ROS_DEBUG("setParamFloat(%s, %f, %s) -> result = %s\n",
+              param, var, (global?"GLOBAL":"LOCAL"), (result?"SUCCESS":"FAILURE"));
 
     return result;
 }
