@@ -11,7 +11,7 @@
     </node>
 
     <!-- camera driver -->
-    <node pkg="nodelet" type="nodelet" name="ximea_nodelet" args="load ximea_camera/RosNodelet $(arg manager_name)">
+    <node pkg="nodelet" type="nodelet" name="settings" args="load ximea_camera/RosNodelet $(arg manager_name)">
       <param name="settings_yaml" type="string" value="$(arg settings)" />
       <param name="aeag" type="bool" value="1" />
       <param name="width" type="int" value="2040" />

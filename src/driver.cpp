@@ -21,8 +21,8 @@ All rights reserved.
 #include <stdexcept>
 #include <string>
 
-#define Driver_DEBUG_LEVEL XI_DL_FATAL
-// #define Driver_DEBUG_LEVEL XI_DL_DETAIL
+//#define Driver_DEBUG_LEVEL XI_DL_FATAL
+#define Driver_DEBUG_LEVEL XI_DL_DETAIL
 
 using ximea_camera::Driver;
 
@@ -367,7 +367,7 @@ bool Driver::setParamInt(const char *param, int var, bool global) {
         int_param_map[param] = getParamInt(param, global);
     }
 
-    ROS_DEBUG("setParamInt(%s, %d, %s) -> result = %s\n",
+    ROS_DEBUG("setParamInt(%s, %d, %s) -> result = %s",
               param, var, (global?"GLOBAL":"LOCAL"), (result?"SUCCESS":"FAILURE"));
 
     return result;
@@ -400,7 +400,7 @@ bool Driver::setParamFloat(const char *param, float var, bool global) {
         float_param_map[param] = getParamFloat(param, global);
     }
 
-    ROS_DEBUG("setParamFloat(%s, %f, %s) -> result = %s\n",
+    ROS_DEBUG("setParamFloat(%s, %f, %s) -> result = %s",
               param, var, (global?"GLOBAL":"LOCAL"), (result?"SUCCESS":"FAILURE"));
 
     return result;

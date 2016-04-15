@@ -263,14 +263,14 @@ void RosDriver::dynamicReconfigureCallback(const ximea_camera::xiAPIConfig &conf
 
         // copy data to ximea api:
         if (description->type == "double") {
-            ROS_DEBUG("%f\n", static_cast<float>(boost::any_cast<double>(val)));
+            ROS_DEBUG("%f", static_cast<float>(boost::any_cast<double>(val)));
             dynamicReconfigureFloat(description->name.c_str(),
                                       static_cast<float>(boost::any_cast<double>(val)));
         } else if (description->type == "bool") {
-            ROS_DEBUG("%d\n", (boost::any_cast<bool>(val))?1:0);
+            ROS_DEBUG("%d", (boost::any_cast<bool>(val))?1:0);
             dynamicReconfigureInt(description->name.c_str(), (boost::any_cast<bool>(val))?1:0);
         } else if (description->type == "int") {
-            ROS_DEBUG("%d\n", boost::any_cast<int>(val));
+            ROS_DEBUG("%d", boost::any_cast<int>(val));
             dynamicReconfigureInt(description->name.c_str(), boost::any_cast<int>(val));
         } else {
             std::cerr << "ERROR: unsupported config type " << description->type  << "\n";
