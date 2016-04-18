@@ -21,8 +21,8 @@ All rights reserved.
 #include <stdexcept>
 #include <string>
 
-//#define Driver_DEBUG_LEVEL XI_DL_FATAL
-#define Driver_DEBUG_LEVEL XI_DL_DETAIL
+#define Driver_DEBUG_LEVEL XI_DL_FATAL
+//#define Driver_DEBUG_LEVEL XI_DL_DETAIL
 
 using ximea_camera::Driver;
 
