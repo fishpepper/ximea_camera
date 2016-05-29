@@ -255,6 +255,10 @@ int Driver::readParamsFromFile(std::string file_name) {
     } catch (std::runtime_error) {}
 
     try {
+        downsampling_ = doc["downsampling"].as<int>();
+    } catch (std::runtime_error) {}
+
+    try {
         cam_name_ =  doc["cam_name"].as<std::string>();
     } catch (std::runtime_error) {}
 
@@ -290,6 +294,7 @@ int Driver::readParamsFromFile(std::string file_name) {
     } catch (std::runtime_error) {}
 
     setImageDataFormat(image_data_format_);
+    setParamInt(XI_PRM_DOWNSAMPLING, downsampling_, True)
 }
 
 void Driver::enableTrigger(unsigned char trigger_mode) {
