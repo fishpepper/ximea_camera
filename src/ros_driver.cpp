@@ -204,8 +204,6 @@ void RosDriver::setImageDataFormat(std::string image_format) {
     // FIXME: if we cannot set the format then there is something wrong
     // we should probably quit then..
 
-    setParamInt(XI_PRM_DOWNSAMPLING, 2);
-
     image_data_format_ = image_data_format;
 }
 
