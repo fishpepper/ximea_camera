@@ -1,7 +1,7 @@
-serial_no: 0
+serial_no: 22472151
 cam_name: "camera_mq022"
 yaml_url: "package://ximea_camera/calibrations/camera_calibration_mq022.yaml"
 allocated_bandwidth: 0.5
 use_cam_timestamp: true
 image_data_format: "XI_RAW8"
-downsampling: 2
+downsampling: 1
