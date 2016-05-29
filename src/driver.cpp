@@ -297,7 +297,7 @@ int Driver::readParamsFromFile(std::string file_name) {
     } catch (std::runtime_error) {}
 
     setImageDataFormat(image_data_format_);
-    setParamInt(XI_PRM_DOWNSAMPLING, downsampling_, true);
+    // setParamInt(XI_PRM_DOWNSAMPLING, downsampling_, true);
 }
 
 void Driver::enableTrigger(unsigned char trigger_mode) {
