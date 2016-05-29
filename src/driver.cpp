@@ -247,6 +247,9 @@ int Driver::readParamsFromFile(std::string file_name) {
     YAML::Node doc = YAML::LoadFile(file_name);
     std::string tmpS;
     int tmpI1, tmpI2, tmpI3, tmpI4;
+    // Default 1 sensor pixel = 1 image pixel
+    // 2 == 2 sensor pixel = 1 image pixel
+    int downsampling_ = 1;
     bool tmpB;
 
     // FIXME: add proper exception handling!
