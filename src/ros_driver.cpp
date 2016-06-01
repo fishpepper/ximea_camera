@@ -203,13 +203,12 @@ void RosDriver::setImageDataFormat(std::string image_format) {
     setParamInt(XI_PRM_IMAGE_DATA_FORMAT, image_data_format);
     // FIXME: if we cannot set the format then there is something wrong
     // we should probably quit then..
-
     image_data_format_ = image_data_format;
 }
 
 void RosDriver::applyParameters() {
-    attachToDynamicReconfigureServer();
     setImageDataFormat(image_data_format_);
+    attachToDynamicReconfigureServer();
 }
 
 bool RosDriver::dynamicReconfigureInt(const char *param, int value) {

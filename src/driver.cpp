@@ -176,7 +176,6 @@ void Driver::startAcquisition() {
     }
     XI_RETURN stat = xiStartAcquisition(xiH_);
     errorHandling(stat, "xiStartAcquisition", "");
-
     acquisition_active_ = true;
 }
 
@@ -233,7 +232,6 @@ void Driver::setImageDataFormat(std::string image_format) {
 
     std::cout << "xiApi: setting image format to " << image_data_format << std::endl;
     setParamInt(XI_PRM_IMAGE_DATA_FORMAT, image_data_format);
-
     image_data_format_ = image_data_format;
 }
 
@@ -247,18 +245,11 @@ int Driver::readParamsFromFile(std::string file_name) {
     YAML::Node doc = YAML::LoadFile(file_name);
     std::string tmpS;
     int tmpI1, tmpI2, tmpI3, tmpI4;
-    // Default 1 sensor pixel = 1 image pixel
-    // 2 == 2 sensor pixel = 1 image pixel
-    int downsampling_ = 1;
     bool tmpB;
 
     // FIXME: add proper exception handling!
     try {
         serial_no_ = doc["serial_no"].as<int>();
-    } catch (std::runtime_error) {}
-
-    try {
-        downsampling_ = doc["downsampling"].as<int>();
     } catch (std::runtime_error) {}
 
     try {
@@ -297,7 +288,6 @@ int Driver::readParamsFromFile(std::string file_name) {
     } catch (std::runtime_error) {}
 
     setImageDataFormat(image_data_format_);
-    // setParamInt(XI_PRM_DOWNSAMPLING, downsampling_, false);
 }
 
 void Driver::enableTrigger(unsigned char trigger_mode) {
