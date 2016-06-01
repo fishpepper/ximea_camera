@@ -1,0 +1,6 @@
+serial_no: 18580351
+cam_name: "camera_mq022"
+yaml_url: "package://ximea_camera/calibrations/camera_calibration_mq022.yaml"
+use_cam_timestamp: true
+image_data_format: "XI_RAW8"
+allocated_bandwidth: 0.9
