@@ -1,0 +1,20 @@
+image_width: 1024
+image_height: 512
+camera_name: flobi_ximea_1
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [658.639927, 0.000000, 511.068089, 0.000000, 664.371798, 335.122685, 0.000000, 0.000000, 1.000000]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [0.073424, -0.036401, 0.007675, -0.007958, 0.000000]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 1.000000]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [680.979736, 0.000000, 501.708984, 0.000000, 0.000000, 689.614075, 338.649320, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000]
