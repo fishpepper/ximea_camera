@@ -1,6 +1,0 @@
-serial_no: 18580351
-cam_name: "ximea_flobi_1"
-yaml_url: "package://ximea_camera/calibrations/camera_calibration_floka_ximea_1.yaml"
-use_cam_timestamp: true
-image_data_format: "XI_RAW8"
-allocated_bandwidth: 0.95
