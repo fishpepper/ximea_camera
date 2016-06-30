@@ -250,29 +250,33 @@ void RosDriver::dynamicReconfigureCallback(const ximea_camera::xiAPIConfig &conf
     std::vector<ximea_camera::xiAPIConfig::AbstractParamDescriptionConstPtr>::const_iterator _i;
     for (_i = config.__getParamDescriptions__().begin();
          _i != config.__getParamDescriptions__().end(); ++_i) {
-        boost::any val;
-        boost::shared_ptr<const ximea_camera::xiAPIConfig::AbstractParamDescription>
-                description = *_i;
+        try {
+            boost::any val;
+            boost::shared_ptr<const ximea_camera::xiAPIConfig::AbstractParamDescription>
+                   description = *_i;
 
-        // fetch actual value:
-        description->getValue(config, val);
-
-        ROS_DEBUG("dynamicReconfigure request: name=%s type=%s ",
-                  description->name.c_str(), description->type.c_str());
-
-        // copy data to ximea api:
-        if (description->type == "double") {
-            ROS_DEBUG("%f", static_cast<float>(boost::any_cast<double>(val)));
-            dynamicReconfigureFloat(description->name.c_str(),
-                                      static_cast<float>(boost::any_cast<double>(val)));
-        } else if (description->type == "bool") {
-            ROS_DEBUG("%d", (boost::any_cast<bool>(val))?1:0);
-            dynamicReconfigureInt(description->name.c_str(), (boost::any_cast<bool>(val))?1:0);
-        } else if (description->type == "int") {
-            ROS_DEBUG("%d", boost::any_cast<int>(val));
-            dynamicReconfigureInt(description->name.c_str(), boost::any_cast<int>(val));
-        } else {
-            std::cerr << "ERROR: unsupported config type " << description->type  << "\n";
-        }
+            // fetch actual value:
+            description->getValue(config, val);
+    
+            ROS_DEBUG("dynamicReconfigure request: name=%s type=%s ",
+                      description->name.c_str(), description->type.c_str());
+    
+            // copy data to ximea api:
+            if (description->type == "double") {
+                ROS_DEBUG("%f", static_cast<float>(boost::any_cast<double>(val)));
+                dynamicReconfigureFloat(description->name.c_str(),
+                                          static_cast<float>(boost::any_cast<double>(val)));
+            } else if (description->type == "bool") {
+                ROS_DEBUG("%d", (boost::any_cast<bool>(val))?1:0);
+                dynamicReconfigureInt(description->name.c_str(), (boost::any_cast<bool>(val))?1:0);
+            } else if (description->type == "int") {
+                ROS_DEBUG("%d", boost::any_cast<int>(val));
+                dynamicReconfigureInt(description->name.c_str(), boost::any_cast<int>(val));
+            } else {
+                std::cerr << "ERROR: unsupported config type " << description->type  << "\n";
+            }
+        } catch (std::invalid_argument exception) {
+		ROS_ERROR("failed to set parameter, xiapi returned an error code");
+	}
     }
 }
