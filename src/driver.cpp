@@ -68,6 +68,8 @@ bool Driver::errorHandling(XI_RETURN ret, std::string command,
         } else if (ret == XI_WRONG_PARAM_VALUE) {
             throw std::invalid_argument("xiAPI: invalid parameter value passed "
                                         "(XI_WRONG_PARAM_VALUE)");
+	} else if (ret == XI_NOT_SUPPORTED) {
+            throw std::invalid_argument("xiAPI: unsupported parameter accessed (XI_NOT_SUPPORTED)");
         } else {
             closeDevice();
             exit(EXIT_FAILURE);
