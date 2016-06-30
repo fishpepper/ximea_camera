@@ -178,7 +178,6 @@ void Driver::startAcquisition() {
     }
     XI_RETURN stat = xiStartAcquisition(xiH_);
     errorHandling(stat, "xiStartAcquisition", "");
-
     acquisition_active_ = true;
 }
 
@@ -235,7 +234,6 @@ void Driver::setImageDataFormat(std::string image_format) {
 
     std::cout << "xiApi: setting image format to " << image_data_format << std::endl;
     setParamInt(XI_PRM_IMAGE_DATA_FORMAT, image_data_format);
-
     image_data_format_ = image_data_format;
 }
 
