@@ -97,11 +97,6 @@ class Driver{
 
     int bayer_filter_array_;
 
- private:
-    void assignDefaultValues();
-    void fetchValues();
-    void syncCameraTimestamp();
-
     // variables for ximea api internals
     int serial_no_;
     int cams_on_bus_;
@@ -110,6 +105,12 @@ class Driver{
     int bandwidth_;
 
     float allocated_bandwidth_;
+
+
+ private:
+    void assignDefaultValues();
+    void fetchValues();
+    void syncCameraTimestamp();
 
     int cam_resolution_h_;
     int cam_resolution_w_;

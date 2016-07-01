@@ -33,9 +33,10 @@ namespace ximea_camera {
 
 class RosDriver : public Driver {
  public:
-    RosDriver(const ros::NodeHandle &nh, std::string cam_name, int serial_no,
+    RosDriver(const ros::NodeHandle &nh, const ros::NodeHandle &pnh, std::string cam_name, int serial_no,
                      std::string yaml_url);
-    RosDriver(const ros::NodeHandle &nh, std::string file_name);
+    RosDriver(const ros::NodeHandle &nh, const ros::NodeHandle &pnh, std::string file_name);
+    explicit RosDriver(const ros::NodeHandle &nh, const ros::NodeHandle &pnh);
     virtual void setImageDataFormat(std::string s);
 
     // since these 2 functions should have the same time stamp we leave it up to the user to

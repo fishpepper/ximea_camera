@@ -22,12 +22,27 @@ All rights reserved.
 
 using ximea_camera::RosDriver;
 
-RosDriver::RosDriver(const ros::NodeHandle &nh, std::string cam_name, int serial_no,
-                                   std::string yaml_url) : Driver(serial_no, cam_name) {
+RosDriver::RosDriver(const ros::NodeHandle &nh, const ros::NodeHandle &pnh,
+                     std::string cam_name, int serial_no,
+                     std::string yaml_url) : Driver(serial_no, cam_name) {
     commonInitialize(nh);
 }
 
-RosDriver::RosDriver(const ros::NodeHandle &nh, std::string file_name) : Driver(file_name) {
+RosDriver::RosDriver(const ros::NodeHandle &nh, const ros::NodeHandle &pnh) : Driver() {
+    // fetch config from launch file parameters
+    pnh.getParam("serial", serial_no_);
+    pnh.getParam("name", cam_name_);
+    pnh.getParam("calibration", yaml_url_);
+    pnh.getParam("cams_on_bus", cams_on_bus_);
+    pnh.getParam("use_cam_timestamp", use_cam_timestamp_);
+    pnh.getParam("allocated_bandwidth", allocated_bandwidth_);
+    pnh.getParam("image_data_format", image_data_format_);
+
+    commonInitialize(nh);
+}
+
+RosDriver::RosDriver(const ros::NodeHandle &nh, const ros::NodeHandle &pnh,
+                     std::string file_name) : Driver(file_name) {
     commonInitialize(nh);
 }
 
@@ -39,6 +54,10 @@ void RosDriver::commonInitialize(const ros::NodeHandle &nh) {
     it_ = new image_transport::ImageTransport(nh);
     ros_cam_pub_ = it_->advertise(std::string("image_raw"), 1);
     cam_info_pub_ = pnh_.advertise<sensor_msgs::CameraInfo>(std::string("camera_info"), 1);
+
+    ROS_INFO_STREAM("config[serial]      = " << serial_no_);
+    ROS_INFO_STREAM("config[name]        = " << cam_name_);
+    ROS_INFO_STREAM("config[calibration] = " << yaml_url_);
 }
 
 void RosDriver::attachToDynamicReconfigureServer() {
@@ -257,10 +276,10 @@ void RosDriver::dynamicReconfigureCallback(const ximea_camera::xiAPIConfig &conf
 
             // fetch actual value:
             description->getValue(config, val);
-    
+
             ROS_DEBUG("dynamicReconfigure request: name=%s type=%s ",
                       description->name.c_str(), description->type.c_str());
-    
+
             // copy data to ximea api:
             if (description->type == "double") {
                 ROS_DEBUG("%f", static_cast<float>(boost::any_cast<double>(val)));
@@ -276,7 +295,7 @@ void RosDriver::dynamicReconfigureCallback(const ximea_camera::xiAPIConfig &conf
                 std::cerr << "ERROR: unsupported config type " << description->type  << "\n";
             }
         } catch (std::invalid_argument exception) {
-		ROS_ERROR("failed to set parameter, xiapi returned an error code");
-	}
+            ROS_ERROR("failed to set parameter, xiapi returned an error code");
+        }
     }
 }

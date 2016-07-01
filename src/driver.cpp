@@ -22,7 +22,7 @@ All rights reserved.
 #include <string>
 
 #define Driver_DEBUG_LEVEL XI_DL_FATAL
-//#define Driver_DEBUG_LEVEL XI_DL_DETAIL
+// #define Driver_DEBUG_LEVEL XI_DL_DETAIL
 
 using ximea_camera::Driver;
 
@@ -53,8 +53,8 @@ void Driver::assignDefaultValues() {
 
 Driver::Driver(std::string file_name) {
     assignDefaultValues();
-    readParamsFromFile(file_name);
     ROS_INFO_STREAM("Driver: reading paramter values from file: " << file_name);
+    readParamsFromFile(file_name);
 }
 
 bool Driver::errorHandling(XI_RETURN ret, std::string command,
@@ -68,7 +68,7 @@ bool Driver::errorHandling(XI_RETURN ret, std::string command,
         } else if (ret == XI_WRONG_PARAM_VALUE) {
             throw std::invalid_argument("xiAPI: invalid parameter value passed "
                                         "(XI_WRONG_PARAM_VALUE)");
-	} else if (ret == XI_NOT_SUPPORTED) {
+    } else if (ret == XI_NOT_SUPPORTED) {
             throw std::invalid_argument("xiAPI: unsupported parameter accessed (XI_NOT_SUPPORTED)");
         } else {
             closeDevice();

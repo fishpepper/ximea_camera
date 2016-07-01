@@ -36,19 +36,23 @@ void RosNodelet::onInit() {
 
     NODELET_DEBUG("ximea_camera: onInit()");
 
-    ros::NodeHandle priv_nh(getPrivateNodeHandle());
     ros::NodeHandle node(getNodeHandle());
+    ros::NodeHandle priv_nh(getPrivateNodeHandle());
 
-    if (!priv_nh.getParam("settings_yaml", config_filename)) {
-        NODELET_ERROR("ximea_camera: failed to load camera settings. please pass config yaml "
-                      "as parameter 'settings_yaml' "
-                      "(e.g. using _settings_yaml:=\"ximea_mq022.yaml\")\n");
-        exit(EXIT_FAILURE);
+    // we either get the config values as parameters from the launch file
+    // or we read it from a given yaml
+    // first check if a settings yaml is passed:
+    if (priv_nh.getParam("settings_yaml", config_filename)) {
+        // fine, use that data
+        NODELET_INFO("ximea_camera: loading cam settings from given yaml");
+        // create driver
+        drv_.reset(new RosDriver(node, priv_nh, config_filename));
+    } else {
+        // ok, no config file given, we will use data passed as parameters
+        // by the launch file
+        // create driver
+        drv_.reset(new RosDriver(node, priv_nh));
     }
-
-
-    // create driver
-    drv_.reset(new RosDriver(node, config_filename));
 
     // open device
     drv_->openDevice();
