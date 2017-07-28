@@ -13,6 +13,7 @@ All rights reserved.
 
 ********************************************************************************/
 
+#include<cstdlib>
 #include <sensor_msgs/image_encodings.h>
 #include <ximea_camera/ros_driver.h>
 
