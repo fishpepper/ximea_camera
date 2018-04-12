@@ -345,14 +345,17 @@ void Driver::limitBandwidth(float factor) {
     if (!xiH_) return;
     XI_RETURN stat;
 
-    int bandwidth = getParamInt(XI_PRM_AVAILABLE_BANDWIDTH);
+    /*int bandwidth = getParamInt(XI_PRM_AVAILABLE_BANDWIDTH);
     std::cout << "measured total bandwith as " << bandwidth << "mbps\n";
 
     unsigned int cam_bandwidth = (bandwidth-bandwidth_safety_margin_) * allocated_bandwidth_;
     std::cout << "will assign a total of " << cam_bandwidth << "mbps ("
               << allocated_bandwidth_ << ") to this camera\n";
 
-    setParamInt(XI_PRM_LIMIT_BANDWIDTH , cam_bandwidth);
+    setParamInt(XI_PRM_LIMIT_BANDWIDTH , cam_bandwidth);*/
+    //see e.g. https://github.com/wavelab/ximea_ros_cam/issues/16
+    std::cout << "BANDWIDTH LIMITING DISABLED! seems like ximea api is broken, always returs 101";
+
 }
 
 bool Driver::setParamInt(const char *param, int var, bool global) {
