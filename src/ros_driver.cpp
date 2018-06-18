@@ -79,6 +79,7 @@ void RosDriver::publishImage(const ros::Time & ts) {
 
     // store value in ros msg
     ros_image_.header.stamp = ts;
+    ros_image_.header.frame_id = cam_name_ + "_optical_frame";
 
     // setup image parameters
     ros_image_.data.resize(cam_buffer_size_);
@@ -99,6 +100,7 @@ void RosDriver::publishImage(const ros::Time & ts) {
 void RosDriver::publishCamInfo(const ros::Time &ts) {
     cam_info_ = cam_info_manager_->getCameraInfo();
     cam_info_.header.stamp = ts;
+    cam_info_.header.frame_id = cam_name_ + "_optical_frame";
     cam_info_pub_.publish(cam_info_);
 }
 
